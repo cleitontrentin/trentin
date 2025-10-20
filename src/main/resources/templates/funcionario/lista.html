@@ -1,4 +1,4 @@
-	<!DOCTYPE html>
+<!DOCTYPE html>
 <html layout:decorate="~{layout}">
 <head><meta charset="UTF-8"/></head>
 <body>
@@ -104,11 +104,11 @@
 	                    </thead>
 	                    <tbody>
 		                    <tr th:each="f : ${funcionarios}">
-		                        <td th:text="${f.id}"></td>
-		                        <td th:text="${f.nome}"></td>
-		                        <td th:text="|R$ ${{f.salario}}|"></td>
-		                        <td th:text="${f.cargo.departamento.nome}"></td>
-		                        <td th:text="${f.cargo.nome}"></td>
+		                        <td th:text="${f.id}">2</td>
+		                        <td th:text="${f.nome}">Ana Maria Lindoval</td>
+		                        <td th:text="|R$ ${{f.salario}}|">R$ 3.560,70</td>
+		                        <td th:text="${f.cargo.departamento.nome}">Administração</td>
+		                        <td th:text="${f.cargo.nome}">Auxiliar Administrativo</td>
 		                        <td>
 		                            <button type="button" class="btn btn-secondary btn-sm" data-container="body"
 		                                    data-toggle="popover" data-placement="top"

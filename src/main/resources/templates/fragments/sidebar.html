@@ -10,6 +10,12 @@
 					class="oi oi-home"></i> <span>Início</span>
 			</a></li>
 		</ul>
+		
+		<ul class="nav nav-pills flex-column">
+			<li class="nav-item"><a class="nav-link" href="/vendas/pdv">
+				<i class="oi oi-cart"></i> <span>PDV</span>
+			</a></li>
+		</ul>
 
 		<ul class="nav nav-pills flex-column">
 			<li class="nav-item"><a
@@ -21,6 +27,9 @@
 
 			<div class="collapse ps-3" id="menuProdutos">
 				<ul class="nav flex-column mt-1">
+					<li class="nav-item"><a class="nav-link"
+						th:href="@{/vendas/pdv}"> <i class="oi oi-cart"></i> <span>PDV</span>
+					</a></li>
 					<li class="nav-item"><a class="nav-link"
 						href="/produtos/cadastrar"> <i class="oi oi-plus"></i> <span>Cadastrar</span>
 					</a></li>
@@ -112,7 +121,7 @@
 					</a></li>
 				</ul>
 			</div>
-		</ul> 	
+		</ul>
 	</nav>
 </body>
 </html>

@@ -1,7 +1,6 @@
 package com.panificadora.trentin.service;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -44,11 +43,15 @@ public class ProdutoServiceImpl implements ProdutoService {
 	public List<Produto> buscarTodos() {
 		return dao.findAll();
 	}
+	
 
 	@Override
-	public Optional<Produto> findByCode(String code) {
+	public Produto findByCode(String code) {
+		
 		return dao.findByCode(code);
 	}
+
+
 
 	@Override
 	@Transactional

@@ -9,6 +9,8 @@ import org.springframework.format.annotation.NumberFormat.Style;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
@@ -35,6 +37,10 @@ public class Produto extends AbstractEntity<Long> {
     private boolean active = true;
 
     private LocalDateTime createdAt = LocalDateTime.now();
+    
+    @Enumerated(EnumType.STRING) // Garante que o valor seja salvo como string
+    @Column(name = "unidade_medida")
+    private UnidadeDeMedida unidadeDeMedida;
     
 	@ManyToOne
 	@JoinColumn(name = "id_categoria_fk")
@@ -92,4 +98,5 @@ public class Produto extends AbstractEntity<Long> {
             throw new RuntimeException("Estoque insuficiente para o produto: " + name);
         }
     }
+
 }

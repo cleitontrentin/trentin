@@ -1,5 +1,6 @@
 package com.panificadora.trentin.service;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,6 +45,23 @@ public class FuncionarioServiceImpl implements FuncionarioService {
 	public List<Funcionario> buscarTodos() {
 		
 		return dao.findAll();
+	}
+
+	@Override
+	public List<Funcionario> buscarPorNome(String nome) {
+		return dao.findbyNome(nome);
+	}
+
+	@Override
+	public List<Funcionario> buscarPorCargo(Long id) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Object buscarPorDatas(LocalDate entrada, LocalDate saida) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

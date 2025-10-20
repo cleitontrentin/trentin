@@ -17,7 +17,7 @@ public interface ProdutoService {
 	
 	List<Produto> buscarTodos();
 
-    Optional<Produto> findByCode(String code);
+    Produto findByCode(String code);
 
 	void addStock(Long id, int quantity);
 

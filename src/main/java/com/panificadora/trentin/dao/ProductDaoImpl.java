@@ -16,17 +16,12 @@ import jakarta.persistence.PersistenceContext;
 public class ProductDaoImpl extends AbstractDao<Produto, Long> implements ProductDao {
 	
 	
-	@PersistenceContext
-	private EntityManager entityManager;
-	
-	    @Override
-	    public Optional<Produto> findByCode(String code) {
-	        List<Produto> result = entityManager.createQuery(
-	                "SELECT p FROM Produto p WHERE p.code = :code", Produto.class)
-	                .setParameter("code", code)
-	                .getResultList();
-	        return result.isEmpty() ? Optional.empty() : Optional.of(result.get(0));
-	    }
-
-
+	@Override
+    public Produto findByCode(String code) {
+        List<Produto> result = createQuery(
+            "SELECT p FROM Produto p WHERE p.code = ?1", code
+        );
+        // retorna o primeiro produto se existir, senão retorna null
+        return result.isEmpty() ? null : result.get(0);
+    }
 }

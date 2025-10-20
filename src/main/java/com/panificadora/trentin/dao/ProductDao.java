@@ -17,6 +17,6 @@ public interface ProductDao {
     
     Produto findById(Long id);
 
-    Optional<Produto> findByCode(String code);
+    Produto findByCode(String code);
 
 }

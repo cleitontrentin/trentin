@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html layout:decorate="~{layout}">
 <head>
@@ -9,7 +10,7 @@
 		<nav class="navbar navbar-expand-md bg-light">
 			<div class="collapse navbar-collapse" id="navbarsExampleDefault">
 				<ul class="navbar-nav mr-auto">
-					<li class="nav-item active"><i class="oi oi-caret-right"></i>
+					<li class="nav-item active"><i class="oi oi-et-right"></i>
 						<span>Lista de Produtos</span></li>
 				</ul>
 				<a class="btn btn-primary btn-md" href="/produtos/cadastrar"
@@ -26,6 +27,12 @@
 				<button class="btn btn-primary" type="button" data-toggle="collapse"
 					data-target="#collapseNome" aria-controls="collapseNome">Nome
 				</button>
+				<button class="btn btn-primary" type="button" data-toggle="collapse"
+					data-target="#collapseCargo" aria-controls="collapseCargo">Categoria
+				</button>
+				<button class="btn btn-primary" type="button" data-toggle="collapse"
+					data-target="#collapseData" aria-controls="collapseData">Datas
+				</button>
 			</p>
 			<div class="row">
 				<div class="col">
@@ -33,9 +40,9 @@
 
 						<nav class="navbar navbar-light bg-light">
 							<form class="form-inline" method="GET"
-								action="/produtos/buscar/nome">
+								th:action="@{/produtos/bus/nome}">
 								<input class="form-control mr-sm-2" type="search"
-									placeholder="nome" aria-label="Search" name="nome" />
+									placeholder="nome" aria-label="Search" th:name="nome" />
 								<button class="btn btn-outline-success my-2 my-sm-0">Search</button>
 							</form>
 						</nav>
@@ -43,18 +50,37 @@
 					</div>
 				</div>
 			</div>
+			<div class="row">
+				<div class="col">
+					<div class="collapse" id="collapseCargo">
 
+						<nav class="navbar navbar-light bg-light">
+							<form class="form-inline" method="GET"
+								th:action="@{/produtos/bus/categoria}">
+								<select class="form-control mr-sm-2" th:name="id"
+									aria-label="Search">
+									<option value="">Cargo</option>
+									<option th:each="c : ${categorias}" th:value="${c.id}"
+										th:text="${c.nome}">Auxiliar Contábil</option>
+								</select>
+								<button class="btn btn-outline-success my-2 my-sm-0">Search</button>
+							</form>
+						</nav>
+
+					</div>
+				</div>
+			</div>
 			<div class="row">
 				<div class="col">
 					<div class="collapse" id="collapseData">
 
 						<nav class="navbar navbar-light bg-light">
 							<form class="form-inline" method="GET"
-								action="/produtos/buscar/data">
+								th:action="@{/produtos/bus/data}">
 								<input class="form-control mr-sm-2" type="date"
-									aria-label="Search" name="entrada" /> <input
+									aria-label="Search" th:name="entrada" /> <input
 									class="form-control mr-sm-2" type="date" aria-label="Search"
-									name="saida" />
+									th:name="saida" />
 								<button class="btn btn-outline-success my-2 my-sm-0">Search</button>
 							</form>
 						</nav>
@@ -65,16 +91,48 @@
 
 
 			<div class="table-responsive">
+
+				<div th:replace="fragments/alert"></div>
+
 				<table class="table table-striped table-hover table-sm">
 					<thead>
+						<tr>
+							<th>#</th>
+							<th>Nome</th>
+							<th>Código</th>
+							<th>Preço</th>
+							<th>Quantidade</th>
+							<th>Categoria</th>
+						</tr>
 					</thead>
 					<tbody>
+						<tr th:each="p : ${produtos}">
+							<td th:text="${p.id}"></td>
+							<td th:text="${p.name}"></td>
+							<td th:text="${p.code}"></td>
+							<td th:text="|R$ ${{p.price}}|"></td>
+							<td th:text="${p.stock}"></td>
+							<td th:text="${p.categoria.nome}">
+							<td></td>
 
-
+							<td colspan="2"><a class="btn btn-info btn-sm"
+								th:href="@{/produtos/editar/{id} (id=${p.id}) }" role="button">
+									<span class="oi oi-brush" title="Editar" aria-hidden="true"></span>
+							</a>
+								<button
+									th:id="${#strings.concat('btn_produtos/excluir/', p.id) }"
+									type="button" class="btn btn-danger btn-sm" data-toggle="modal"
+									data-target="#myModal">
+									<span class="oi oi-circle-x" title="Excluir" aria-hidden="true"></span>
+								</button></td>
+						</tr>
 					</tbody>
 				</table>
 			</div>
 		</div>
+
+		<div th:replace="fragments/modal :: modal"></div>
+
 	</section>
 </body>
 </html>
