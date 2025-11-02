@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html layout:decorate="~{layout}">
+<head>
+<meta charset="UTF-8" />
+</head>
+<body>
+
+	<section class="layout-content" layout:fragment="corpo">
+		<nav class="navbar navbar-expand-md bg-light">
+			<div class="collapse navbar-collapse" id="navbarsExampleDefault">
+				<ul class="navbar-nav mr-auto">
+					<li class="nav-item active"><i class="oi oi-caret-right"></i>
+						<span>Lista de Vendas</span></li>
+				</ul>
+				<a class="btn btn-primary btn-md" href="/vendas/pdv" role="button">
+					<span class="oi oi-plus" title="Nova Venda" aria-hidden="true"></span>
+					<span>Nova Venda</span>
+				</a>
+			</div>
+		</nav>
+
+		<div class="container">
+
+			<p>
+				<i class="oi oi-magnifying-glass"></i><span></span>
+				<button class="btn btn-primary" type="button" data-toggle="collapse"
+					data-target="#collapseCliente" aria-controls="collapseCliente">Cliente
+				</button>
+				<button class="btn btn-primary" type="button" data-toggle="collapse"
+					data-target="#collapseData" aria-controls="collapseData">Data
+				</button>
+			</p>
+
+			<!-- Buscar por Cliente -->
+			<div class="row">
+				<div class="col">
+					<div class="collapse" id="collapseCliente">
+						<nav class="navbar navbar-light bg-light">
+							<form class="form-inline" method="GET"
+								th:action="@{/vendas/buscar/cliente}">
+								<input class="form-control mr-sm-2" type="search"
+									placeholder="nome do cliente" aria-label="Search"
+									th:name="cliente" />
+								<button class="btn btn-outline-success my-2 my-sm-0">Buscar</button>
+							</form>
+						</nav>
+					</div>
+				</div>
+			</div>
+
+			<!-- Buscar por Data -->
+			<div class="row">
+				<div class="col">
+					<div class="collapse" id="collapseData">
+						<nav class="navbar navbar-light bg-light">
+							<form class="form-inline" method="GET"
+								th:action="@{/vendas/buscar/data}">
+								<input class="form-control mr-sm-2" type="date"
+									aria-label="Search" th:name="inicio" /> <input
+									class="form-control mr-sm-2" type="date" aria-label="Search"
+									th:name="fim" />
+								<button class="btn btn-outline-success my-2 my-sm-0">Buscar</button>
+							</form>
+						</nav>
+					</div>
+				</div>
+			</div>
+
+			<!-- Alertas -->
+			<div class="table-responsive">
+				<div th:replace="fragments/alert"></div>
+
+				<!-- Tabela -->
+				<table class="table table-striped table-hover table-sm">
+					<thead>
+						<tr>
+							<th>#</th>
+							<th>Data</th>
+							<th>Cliente</th>
+							<th>Itens</th>
+							<th>Total (R$)</th>
+							<th>Método Pagamento</th>
+							<th>Ação</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr th:each="v : ${vendas}">
+							<td th:text="${v.id}">1</td>
+							<td th:text="${#temporals.format(v.criadoEm, 'dd/MM/yyyy')}">2017/08/14</td>
+							<td th:text="${v.cliente != null ? v.cliente : 'Consumidor Final'}">João Silva</td>
+							<td th:text="${v.itens.size()}">3</td>
+							<td	th:text="${#numbers.formatDecimal(v.total, 1, 'POINT', 2, 'COMMA')}">123,45</td>
+							<td th:text="${v.metodoPagamento}">Dinheiro</td>
+
+							<td><a class="btn btn-info btn-sm"
+								th:href="@{/vendas/detalhar/{id}(id=${v.id})}" role="button">
+									<span class="oi oi-eye" title="Detalhar" aria-hidden="true"></span>
+							</a>
+								<button th:id="${#strings.concat('btn_vendas/excluir/', v.id)}"
+									type="button" class="btn btn-danger btn-sm" data-toggle="modal"
+									data-target="#myModal">
+									<span class="oi oi-circle-x" title="Excluir" aria-hidden="true"></span>
+								</button></td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+
+		<div th:replace="fragments/modal :: modal"></div>
+
+	</section>
+</body>
+</html>

@@ -15,4 +15,6 @@ public interface VendaDao {
     Venda findById(Long id);
 
     List<Venda> findAll();
+
+    Venda buscarPorIdComItens(Long id);
 }

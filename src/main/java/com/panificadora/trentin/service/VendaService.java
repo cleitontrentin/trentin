@@ -2,6 +2,7 @@ package com.panificadora.trentin.service;
 
 import java.util.List;
 
+import com.panificadora.trentin.domain.MetodoPagamento;
 import com.panificadora.trentin.domain.Venda;
 
 public interface VendaService {
@@ -20,5 +21,7 @@ public interface VendaService {
 
 	Venda adicionarItemPorCodigo(Long vendaId, String codigo, int quantidade);
 
-	Venda finalizarVenda(Long vendaId, String metodoPagamento, String cliente);
+	Venda finalizarVenda(Long vendaId, MetodoPagamento metodoPagamento, String cliente);
+
+	Venda buscarPorIdComItens(Long id);
 }

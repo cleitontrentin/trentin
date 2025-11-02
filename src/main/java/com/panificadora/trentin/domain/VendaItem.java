@@ -2,6 +2,8 @@ package com.panificadora.trentin.domain;
 
 import java.math.BigDecimal;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
@@ -13,7 +15,8 @@ import jakarta.persistence.PreUpdate;
 @Entity
 public class VendaItem extends AbstractEntity<Long> {
 	
-	@ManyToOne(optional = false, fetch = FetchType.EAGER)
+    @ManyToOne
+    @JoinColumn(name = "produto_id")
     private Produto produto;
 
     private Integer quantidade;
@@ -21,7 +24,8 @@ public class VendaItem extends AbstractEntity<Long> {
     private BigDecimal precoUnitario;
 
     private BigDecimal subtotal;
-
+    
+    @JsonBackReference
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "venda_id")
     private Venda venda;
@@ -64,9 +68,12 @@ public class VendaItem extends AbstractEntity<Long> {
 
 
 
-	public BigDecimal getSubtotal() {
-		return subtotal;
-	}
+    public BigDecimal getSubtotal() {
+        if (precoUnitario != null) {
+            return precoUnitario.multiply(BigDecimal.valueOf(quantidade));
+        }
+        return BigDecimal.ZERO;
+    }
 
 
 

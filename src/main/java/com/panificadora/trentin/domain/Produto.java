@@ -2,10 +2,11 @@ package com.panificadora.trentin.domain;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.List;
 
 import org.springframework.format.annotation.NumberFormat;
 import org.springframework.format.annotation.NumberFormat.Style;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -13,7 +14,6 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
 
@@ -44,6 +44,7 @@ public class Produto extends AbstractEntity<Long> {
     
 	@ManyToOne
 	@JoinColumn(name = "id_categoria_fk")
+	@JsonIgnore
 	private Categoria categoria;
 	
 	public String getCode() {

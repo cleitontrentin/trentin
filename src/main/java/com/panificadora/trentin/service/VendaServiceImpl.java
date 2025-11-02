@@ -1,14 +1,15 @@
 package com.panificadora.trentin.service;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.List;
-
-import javax.management.RuntimeErrorException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.panificadora.trentin.dao.VendaDao;
+import com.panificadora.trentin.domain.MetodoPagamento;
 import com.panificadora.trentin.domain.Produto;
 import com.panificadora.trentin.domain.Venda;
 import com.panificadora.trentin.domain.VendaItem;
@@ -23,12 +24,10 @@ public class VendaServiceImpl implements VendaService {
 
     @Autowired
     private ProdutoService produtoService;
+    
 
     @Override
     public void salvar(Venda venda) {
-        if (venda.getStatus() == null) {
-            venda.setStatus(VendaStatus.ABERTA);
-        }
         dao.save(venda);
     }
 
@@ -44,7 +43,7 @@ public class VendaServiceImpl implements VendaService {
 
     @Override
     public Venda buscarPorId(Long id) {
-        Venda venda = dao.findById(id);
+        Venda venda = dao.buscarPorIdComItens(id);
         if (venda == null) {
             throw new RuntimeException("Venda não encontrada");
         }
@@ -61,11 +60,14 @@ public class VendaServiceImpl implements VendaService {
     public Venda criarVenda() {
         Venda venda = new Venda();
         venda.setStatus(VendaStatus.ABERTA);
+        venda.setCriadoEm(LocalDateTime.now());
+        venda.setTotal(BigDecimal.ZERO);
         dao.save(venda);
         return venda;
     }
     
 
+    @Override
     @Transactional
     public Venda adicionarItemPorCodigo(Long vendaId, String codigoProduto, int quantidade) {
         Venda venda = buscarPorId(vendaId);
@@ -83,6 +85,7 @@ public class VendaServiceImpl implements VendaService {
         item.setProduto(produto);
         item.setQuantidade(quantidade);
         item.setPrecoUnitario(produto.getPrice());
+        item.setVenda(venda);
 
         venda.adicionarItem(item);
         dao.update(venda);
@@ -90,9 +93,9 @@ public class VendaServiceImpl implements VendaService {
         return venda;
     }
 
-    @Transactional
-    public Venda finalizarVenda(Long id, String metodoPagamento, String nomeCliente) {
-        Venda venda = buscarPorId(id);
+    @Override
+    public Venda finalizarVenda(Long vendaId, MetodoPagamento metodoPagamento, String cliente) {
+        Venda venda = buscarPorId(vendaId);
 
         if (venda.getItens() == null || venda.getItens().isEmpty()) {
             throw new RuntimeException("Venda sem itens");
@@ -100,16 +103,19 @@ public class VendaServiceImpl implements VendaService {
 
         venda.recalcularTotal();
         venda.setStatus(VendaStatus.FINALIZADA);
-        venda.setCliente(nomeCliente);
-        // venda.setMetodoPagamento(metodoPagamento);
-
+        venda.setCliente(cliente);
+        venda.setMetodoPagamento(metodoPagamento);
         dao.update(venda);
 
-        // baixa o estoque de cada item
+        // baixa o estoque
         for (VendaItem item : venda.getItens()) {
             produtoService.removeStock(item.getProduto().getId(), item.getQuantidade());
         }
 
         return venda;
+    }
+    
+    public Venda buscarPorIdComItens(Long id) {
+        return dao.buscarPorIdComItens(id);
     }
 }
