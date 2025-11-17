@@ -126,13 +126,13 @@
 		<script th:inline="javascript">
 /*<![CDATA[*/
 document.addEventListener("DOMContentLoaded", function () {
-    console.log("Script carregado");
+    //console.log("Script carregado");
 
     const btnAdicionar = document.getElementById("btnAdicionar");
     const codigoInput = document.getElementById("codigo");
     const quantidadeInput = document.getElementById("quantidade");
     const vendaId = /*[[${venda.id}]]*/ 0;
-    console.log("Venda ID:", vendaId);
+    //console.log("Venda ID:", vendaId);
 
     btnAdicionar.addEventListener("click", function () {
         const codigo = codigoInput.value.trim();

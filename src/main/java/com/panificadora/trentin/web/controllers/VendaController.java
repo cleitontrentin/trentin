@@ -35,7 +35,7 @@ public class VendaController {
     public String abrirPdv(ModelMap model) {
         Venda venda = vendaService.criarVenda();
         model.addAttribute("venda", venda);
-        return "venda/pdv";
+        return "/venda/pdv";
     }
 
     // ===============================
