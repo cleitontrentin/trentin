@@ -91,26 +91,80 @@
 				</ul>
 			</div>
 		</ul>
-		
+
 		<ul class="nav nav-pills flex-column">
+
+			<!-- Item principal Insumo com submenu -->
 			<li class="nav-item"><a
 				class="nav-link d-flex justify-content-between align-items-center"
 				data-bs-toggle="collapse" href="#menuInsumos" role="button"
 				aria-expanded="false" aria-controls="menuInsumos"> <span><i
-						class="oi oi-spreadsheet"></i> Insumo </span> <i class="oi oi-chevron-bottom"></i>
+						class="oi oi-spreadsheet"></i> Insumo </span> <i
+					class="oi oi-chevron-bottom"></i>
 			</a></li>
 
+			<!-- Submenu principal Insumo -->
 			<div class="collapse ps-3" id="menuInsumos">
 				<ul class="nav flex-column mt-1">
-					<li class="nav-item"><a class="nav-link"
-						href="/insumos/cadastrar"> <i class="oi oi-plus"></i> <span>Cadastrar</span>
-					</a></li>
-					<li class="nav-item"><a class="nav-link" href="/insumos/listar">
-							<i class="oi oi-spreadsheet"></i> <span>Listar</span>
-					</a></li>
+
+					<!-- Subcategoria Insumo -->
+					<li class="nav-item"><a
+						class="nav-link d-flex justify-content-between align-items-center"
+						data-bs-toggle="collapse" href="#submenuInsumo" role="button"
+						aria-expanded="false" aria-controls="submenuInsumo"> <span><i
+								class="oi oi-box"></i> Insumo</span> <i class="oi oi-chevron-bottom"></i>
+					</a>
+						<div class="collapse ps-3" id="submenuInsumo">
+							<ul class="nav flex-column mt-1">
+								<li><a class="nav-link" href="/insumos/cadastrar">Cadastrar
+										Insumo</a></li>
+								<li><a class="nav-link" href="/insumos/listar">Listar
+										Insumos</a></li>
+							</ul>
+						</div></li>
+
+					<!-- Subcategoria Tabela Nutricional -->
+					<li class="nav-item"><a
+						class="nav-link d-flex justify-content-between align-items-center"
+						data-bs-toggle="collapse" href="#submenuTabelaNutricional"
+						role="button" aria-expanded="false"
+						aria-controls="submenuTabelaNutricional"> <span><i
+								class="oi oi-list"></i> Tabela Nutricional</span> <i
+							class="oi oi-chevron-bottom"></i>
+					</a>
+						<div class="collapse ps-3" id="submenuTabelaNutricional">
+							<ul class="nav flex-column mt-1">
+								<li><a class="nav-link"
+									href="/insumos/tabela-nutricional/cadastrar">Cadastrar
+										Tabela Nutricional</a></li>
+								<li><a class="nav-link"
+									href="/insumos/tabela-nutricional/listar">Listar Tabelas
+										Nutricionais</a></li>
+							</ul>
+						</div></li>
+
+					<!-- Subcategoria Receita -->
+					<li class="nav-item"><a
+						class="nav-link d-flex justify-content-between align-items-center"
+						data-bs-toggle="collapse" href="#submenuReceita" role="button"
+						aria-expanded="false" aria-controls="submenuReceita"> <span><i
+								class="oi oi-book"></i> Receita</span> <i class="oi oi-chevron-bottom"></i>
+					</a>
+						<div class="collapse ps-3" id="submenuReceita">
+							<ul class="nav flex-column mt-1">
+								<li><a class="nav-link" href="/insumos/receita/cadastrar">Cadastrar
+										Receita</a></li>
+								<li><a class="nav-link" href="/insumos/receita/listar">Listar
+										Receitas</a></li>
+							</ul>
+						</div></li>
+
 				</ul>
 			</div>
+
 		</ul>
+
+
 
 		<ul class="nav nav-pills flex-column">
 			<li class="nav-item"><a
