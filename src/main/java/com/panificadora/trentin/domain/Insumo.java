@@ -1,6 +1,12 @@
 package com.panificadora.trentin.domain;
 
+import java.math.BigDecimal;
+
+import org.springframework.format.annotation.NumberFormat;
+import org.springframework.format.annotation.NumberFormat.Style;
+
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
@@ -13,8 +19,10 @@ public class Insumo extends AbstractEntity<Long>{
 
 
     private String nome;
-
-    private String descricao;
+    
+	@NumberFormat(style = Style.CURRENCY, pattern = "#,##0.00")
+	@Column(nullable = false, columnDefinition = "DECIMAL(7,2) DEFAULT 0.00")
+    private BigDecimal preco;
 
     private String unidadeMedida;
 
@@ -30,12 +38,12 @@ public class Insumo extends AbstractEntity<Long>{
 		this.nome = nome;
 	}
 
-	public String getDescricao() {
-		return descricao;
+	public BigDecimal getPreco() {
+		return preco;
 	}
 
-	public void setDescricao(String descricao) {
-		this.descricao = descricao;
+	public void setPreco(BigDecimal preco) {
+		this.preco = preco;
 	}
 
 	public String getUnidadeMedida() {

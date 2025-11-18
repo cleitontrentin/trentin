@@ -31,6 +31,7 @@
 	                        <th>#</th>
 	                        <th>Nome</th>
 	                        <th>Peso</th>
+	                        <th>Preço</th>
 	                    </tr>
 	                    </thead>
 	                    <tbody>
@@ -38,6 +39,7 @@
 		                        <td th:text="${i.id}">3</td>
 		                        <td th:text="${i.nome}"></td>
 		                        <td th:text="${i.unidadeMedida}"></td>
+		                        <td th:text="${i.preco}"></td>
 		                        <td colspan="2">
 		                            <a class="btn btn-info btn-sm" th:href="@{/insumos/editar/{id} (id=${i.id}) }" role="button">
 		                                <span class="oi oi-brush" title="Editar" aria-hidden="true"></span>

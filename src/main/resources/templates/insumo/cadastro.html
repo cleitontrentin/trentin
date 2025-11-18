@@ -40,6 +40,14 @@
 	
 	                        </div>
 	                    </div>
+	                    <div class="form-group col-md-6">
+	                        <label for="preco">Preço do Produto</label>
+	                        <input type="text" class="form-control" id="preco" data-mask="#.##0,00"
+	                               data-mask-reverse="true" th:field="*{preco}"/>
+	                        <div class="invalid-feedback">
+	
+	                        </div>
+	                    </div>
 	                </div>
 	                <input type="hidden" id="id" th:field="*{id}"/>
 	                <button type="submit" class="btn btn-primary btn-sm">Salvar</button>
