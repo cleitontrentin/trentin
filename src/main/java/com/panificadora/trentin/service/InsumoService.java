@@ -3,6 +3,7 @@ package com.panificadora.trentin.service;
 import java.util.List;
 
 import com.panificadora.trentin.domain.Insumo;
+import com.panificadora.trentin.domain.UnidadeDeMedida;
 
 
 public interface InsumoService {

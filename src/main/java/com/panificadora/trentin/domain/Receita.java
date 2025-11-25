@@ -26,6 +26,15 @@ public class Receita extends AbstractEntity<Long> {
 	public void setQuantidade(BigDecimal quantidade) {
 		this.quantidade = quantidade;
 	}
+
+	public UnidadeDeMedida getUnidadeDeMedida() {
+		return unidadeDeMedida;
+	}
+
+	public void setUnidadeDeMedida(UnidadeDeMedida unidadeDeMedida) {
+		this.unidadeDeMedida = unidadeDeMedida;
+	}
     
+	
     
 }
