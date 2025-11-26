@@ -8,7 +8,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.panificadora.trentin.dao.InsumoDao;
 import com.panificadora.trentin.domain.Insumo;
-import com.panificadora.trentin.domain.UnidadeDeMedida;
 
 @Service
 @Transactional(readOnly = false)

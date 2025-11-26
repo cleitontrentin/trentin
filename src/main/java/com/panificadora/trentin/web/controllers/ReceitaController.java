@@ -11,8 +11,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.panificadora.trentin.domain.Receita;
-import com.panificadora.trentin.domain.UF;
 import com.panificadora.trentin.domain.UnidadeDeMedida;
+import com.panificadora.trentin.service.InsumoService;
 import com.panificadora.trentin.service.ReceitaService;
 
 @Controller
@@ -22,9 +22,13 @@ public class ReceitaController {
 	@Autowired
 	private ReceitaService receitaService;
 
+	@Autowired
+	private InsumoService insumoService;
+
 	@GetMapping("/cadastrar")
-	public String cadastrar(Receita receita) {
-		return "/receita/cadastro";
+	public String cadastrar(Receita receita, ModelMap model) {
+		model.addAttribute("insumosDisponiveis", insumoService.buscarTodos());
+		return "receita/cadastro";
 	}
 
 	@GetMapping("/listar")
@@ -55,17 +59,16 @@ public class ReceitaController {
 
 	@GetMapping("/excluir/{id}")
 	public String excluir(@PathVariable("id") Long id, ModelMap model) {
-			receitaService.excluir(id);
-			model.addAttribute("success", "Departamento excluído com sucesso.");
-			return listar(model);
-		}
-	
+		receitaService.excluir(id);
+		model.addAttribute("success", "Departamento excluído com sucesso.");
+		return listar(model);
+	}
+
 	@ModelAttribute("UnidadeDeMedidas")
 	public UnidadeDeMedida[] getUnidadeDeMedidas() {
 		return UnidadeDeMedida.values();
 	}
 
-		
-	}
 
 
+}

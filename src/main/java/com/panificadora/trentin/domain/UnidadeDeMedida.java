@@ -2,9 +2,10 @@ package com.panificadora.trentin.domain;
 
 public enum UnidadeDeMedida {
 	UNIDADE("Unidade"),
-    KG("Kg"),
+	KG("Kg"),
     LITRO("Litro");
-    
+	
+	
     private  String descricao;
     
 
