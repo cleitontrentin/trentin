@@ -1,15 +1,13 @@
 package com.panificadora.trentin.domain;
 
 import java.math.BigDecimal;
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
-import jakarta.persistence.CollectionTable;
-import jakarta.persistence.Column;
-import jakarta.persistence.ElementCollection;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.MapKeyJoinColumn;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 
 @SuppressWarnings("serial")
@@ -17,22 +15,19 @@ import jakarta.persistence.Table;
 @Table(name = "RECEITAS")
 public class Receita extends AbstractEntity<Long> {
 	
-	private String nomeReceita;
+	private String nome;
 	
 	private BigDecimal quantidade;
 	
-	@ElementCollection
-	@CollectionTable(name = "RECEITA_INSUMOS", joinColumns = @JoinColumn(name = "receita_id"))
-	@MapKeyJoinColumn(name = "insumo_id")
-	@Column(name ="quantidade")
-	private Map<Insumo, Double> insumos = new HashMap<>();
+    @OneToMany(mappedBy = "receita", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ItemReceita> itens = new ArrayList<>();
 
-	public String getNomeReceita() {
-		return nomeReceita;
+	public String getNome() {
+		return nome;
 	}
 
-	public void setNomeReceita(String nomeReceita) {
-		this.nomeReceita = nomeReceita;
+	public void setNome(String nome) {
+		this.nome = nome;
 	}
 
 	public BigDecimal getQuantidade() {
@@ -43,12 +38,12 @@ public class Receita extends AbstractEntity<Long> {
 		this.quantidade = quantidade;
 	}
 
-	public Map<Insumo, Double> getInsumos() {
-		return insumos;
-	}
+    public List<ItemReceita> getItens() {
+        return itens;
+    }
 
-	public void setInsumos(Map<Insumo, Double> insumos) {
-		this.insumos = insumos;
-	}
+    public void setItens(List<ItemReceita> itens) {
+        this.itens = itens;
+    }
     
 }

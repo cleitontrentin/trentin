@@ -14,8 +14,8 @@
 	                        </li>
 	                    </ul>
 	                </div>
-	                <a class="btn btn-primary btn-md" href="/funcionarios/listar" role="button">
-	                    <span class="oi oi-spreadsheet" title="Listar" aria-hidden="true"></span>
+	                <a class="btn btn-primary btn-md" href="@{/funcionarios/listar}" role="button">
+	                    <span class="oi oi-spreadsheet" title="Cadastro" aria-hidden="true"></span>
 	                    <span>Listar Funcionários</span>
 	                </a>
 	            </nav>
@@ -122,6 +122,7 @@
 	                            <option th:each="uf : ${ufs}" th:value="${uf}" th:text="${uf.sigla}"></option>
 	                        </select>
 	                        <div class="invalid-feedback">
+	
 	                        </div>
 	                    </div>
 	                    <div class="form-group col-md-2">

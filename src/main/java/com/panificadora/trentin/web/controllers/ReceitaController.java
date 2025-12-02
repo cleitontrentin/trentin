@@ -39,9 +39,10 @@ public class ReceitaController {
 
 	@PostMapping("/salvar")
 	public String salvar(Receita receita, RedirectAttributes attr) {
-		receitaService.salvar(receita);
-		attr.addFlashAttribute("success", "Receita inserido com sucesso.");
-		return "redirect:/receitas/cadastrar";
+	    receita.getItens().forEach(item -> item.setReceita(receita));
+	    receitaService.salvar(receita);
+	    attr.addFlashAttribute("success", "Receita inserida com sucesso.");
+	    return "redirect:/receitas/cadastrar";
 	}
 
 	@GetMapping("/editar/{id}")
@@ -52,9 +53,10 @@ public class ReceitaController {
 
 	@PostMapping("/editar")
 	public String editar(Receita receita, RedirectAttributes attr) {
-		receitaService.editar(receita);
-		attr.addFlashAttribute("success", "Registro atualizado com sucesso.");
-		return "redirect:/receitas/cadastrar";
+	    receita.getItens().forEach(item -> item.setReceita(receita));
+	    receitaService.editar(receita);
+	    attr.addFlashAttribute("success", "Registro atualizado com sucesso.");
+	    return "redirect:/receitas/cadastrar";
 	}
 
 	@GetMapping("/excluir/{id}")
