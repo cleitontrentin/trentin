@@ -1,5 +1,7 @@
 package com.panificadora.trentin.service;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -44,6 +46,21 @@ public class ReceitaServiceImpl implements ReceitaService {
 		// TODO Auto-generated method stub
 		return dao.findAll();
 	}
+	
 
+	@Override
+	public BigDecimal calcularCustoUnitario(Receita receita) {
+	    BigDecimal total = calcularCustoTotal(receita);
+	    return receita.getRendimento() != null && receita.getRendimento() > 0 
+	            ? total.divide(BigDecimal.valueOf(receita.getRendimento()), 4, RoundingMode.HALF_UP)
+	            : BigDecimal.ZERO;
+	}
+
+	@Override
+	public BigDecimal calcularCustoTotal(Receita receita) {
+	    return receita.getItens().stream()
+	        .<BigDecimal>map(item -> item.getInsumo().getPreco().multiply(item.getQuantidade())) // Cast explícito aqui
+	        .reduce(BigDecimal.ZERO, BigDecimal::add);
+	}
 	
 }

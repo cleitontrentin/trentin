@@ -1,9 +1,13 @@
 package com.panificadora.trentin.domain;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 
 @SuppressWarnings("serial")
 @Entity
@@ -14,12 +18,11 @@ public class ItemReceita  extends AbstractEntity<Long>{
     @JoinColumn(name = "insumo_pk")
     private Insumo insumo;
 
-    private Double quantidade;
+    private BigDecimal quantidade;
 
     @ManyToOne
     @JoinColumn(name = "receita_pk")
     private Receita receita;
-
 
     public Insumo getInsumo() {
         return insumo;
@@ -29,11 +32,11 @@ public class ItemReceita  extends AbstractEntity<Long>{
         this.insumo = insumo;
     }
 
-    public Double getQuantidade() {
+    public BigDecimal getQuantidade() {
         return quantidade;
     }
 
-    public void setQuantidade(Double quantidade) {
+    public void setQuantidade(BigDecimal quantidade) {
         this.quantidade = quantidade;
     }
 
@@ -44,5 +47,24 @@ public class ItemReceita  extends AbstractEntity<Long>{
     public void setReceita(Receita receita) {
         this.receita = receita;
     }
+
+    @Transient
+    public BigDecimal getCustoItem() {
+        if (insumo == null 
+            || insumo.getPreco() == null 
+            || quantidade == null 
+            || insumo.getPeso() == null) {
+            return BigDecimal.ZERO;
+        }
+
+        // preço por kg
+        BigDecimal precoPorKg = insumo.getPreco()
+                .divide(insumo.getPeso(), 10, RoundingMode.HALF_UP);
+
+        // custo proporcional
+        return precoPorKg.multiply(quantidade);
+    }
+
+
 
 }

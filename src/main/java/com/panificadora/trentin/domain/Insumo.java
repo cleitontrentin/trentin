@@ -26,7 +26,7 @@ public class Insumo extends AbstractEntity<Long>{
 	@Enumerated(EnumType.STRING)
     private UnidadeDeMedida unidadeMedida;
 	
-	private Double peso;
+	private BigDecimal peso;
 
 	public String getNome() {
 		return nome;
@@ -52,11 +52,11 @@ public class Insumo extends AbstractEntity<Long>{
 		this.unidadeMedida = unidadeMedida;
 	}
 
-	public Double getPeso() {
+	public BigDecimal getPeso() {
 		return peso;
 	}
 
-	public void setPeso(Double peso) {
+	public void setPeso(BigDecimal peso) {
 		this.peso = peso;
 	}
 

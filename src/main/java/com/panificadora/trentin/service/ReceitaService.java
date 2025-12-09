@@ -1,8 +1,8 @@
 package com.panificadora.trentin.service;
 
+import java.math.BigDecimal;
 import java.util.List;
 
-import com.panificadora.trentin.domain.Cargo;
 import com.panificadora.trentin.domain.Receita;
 
 public interface ReceitaService {
@@ -17,5 +17,8 @@ public interface ReceitaService {
 	
 	List<Receita> buscarTodos();
 	
+    BigDecimal calcularCustoTotal(Receita receita);
+
+    BigDecimal calcularCustoUnitario(Receita receita);
 
 }
