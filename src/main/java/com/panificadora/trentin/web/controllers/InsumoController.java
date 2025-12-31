@@ -11,10 +11,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import com.panificadora.trentin.domain.Insumo;
-import com.panificadora.trentin.domain.MetodoPagamento;
-import com.panificadora.trentin.domain.UF;
-import com.panificadora.trentin.domain.UnidadeDeMedida;
+import com.panificadora.trentin.entities.Insumo;
+import com.panificadora.trentin.entities.MetodoPagamento;
+import com.panificadora.trentin.entities.UF;
+import com.panificadora.trentin.entities.UnidadeDeMedida;
 import com.panificadora.trentin.service.InsumoService;
 
 @Controller

@@ -1,4 +1,4 @@
-package com.panificadora.trentin.domain;
+package com.panificadora.trentin.entities;
 
 public enum VendaStatus {
     ABERTA,

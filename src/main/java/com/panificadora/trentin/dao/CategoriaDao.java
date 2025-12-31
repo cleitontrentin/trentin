@@ -2,7 +2,7 @@ package com.panificadora.trentin.dao;
 
 import java.util.List;
 
-import com.panificadora.trentin.domain.Categoria;
+import com.panificadora.trentin.entities.Categoria;
 
 public interface CategoriaDao {
 

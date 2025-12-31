@@ -6,7 +6,7 @@ import java.util.Optional;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.panificadora.trentin.domain.Produto;
+import com.panificadora.trentin.entities.Produto;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;

@@ -4,7 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.stereotype.Component;
 
-import com.panificadora.trentin.domain.Cargo;
+import com.panificadora.trentin.entities.Cargo;
 import com.panificadora.trentin.service.CargoService;
 
 @Component

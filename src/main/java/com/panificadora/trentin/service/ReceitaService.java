@@ -3,7 +3,7 @@ package com.panificadora.trentin.service;
 import java.math.BigDecimal;
 import java.util.List;
 
-import com.panificadora.trentin.domain.Receita;
+import com.panificadora.trentin.entities.Receita;
 
 public interface ReceitaService {
 
@@ -20,5 +20,7 @@ public interface ReceitaService {
     BigDecimal calcularCustoTotal(Receita receita);
 
     BigDecimal calcularCustoUnitario(Receita receita);
+    
+    Receita buscarPorIdComItens(Long id);
 
 }

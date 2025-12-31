@@ -1,4 +1,4 @@
-package com.panificadora.trentin.domain;
+package com.panificadora.trentin.entities;
 
 import java.util.List;
 
@@ -9,14 +9,14 @@ import jakarta.persistence.Table;
 
 @SuppressWarnings("serial")
 @Entity
-@Table(name = "DEPARTAMENTOS")
-public class Departamento extends AbstractEntity<Long> {
+@Table(name = "CATEGORIAS")
+public class Categoria extends AbstractEntity<Long> {
 
 	@Column(name = "nome", nullable = false, unique = true, length = 60)
 	private String nome;
 	
-	@OneToMany(mappedBy = "departamento")
-	private List<Cargo> cargos;
+	@OneToMany(mappedBy = "categoria")
+	private List<Produto> produtos;
 
 	public String getNome() {
 		return nome;
@@ -26,11 +26,11 @@ public class Departamento extends AbstractEntity<Long> {
 		this.nome = nome;
 	}
 
-	public List<Cargo> getCargos() {
-		return cargos;
+	public List<Produto> getProdutos() {
+		return produtos;
 	}
 
-	public void setCargos(List<Cargo> cargos) {
-		this.cargos = cargos;
+	public void setCargos(List<Produto> produtos) {
+		this.produtos = produtos;
 	}
 }

@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.panificadora.trentin.dao.ReceitaDao;
-import com.panificadora.trentin.domain.Receita;
+import com.panificadora.trentin.entities.Receita;
 
 @Service @Transactional(readOnly = false)
 public class ReceitaServiceImpl implements ReceitaService {
@@ -37,13 +37,11 @@ public class ReceitaServiceImpl implements ReceitaService {
 
 	@Override
 	public Receita buscarPorId(Long id) {
-		// TODO Auto-generated method stub
 		return dao.findById(id);
 	}
 
 	@Override
 	public List<Receita> buscarTodos() {
-		// TODO Auto-generated method stub
 		return dao.findAll();
 	}
 	
@@ -63,4 +61,9 @@ public class ReceitaServiceImpl implements ReceitaService {
 	        .reduce(BigDecimal.ZERO, BigDecimal::add);
 	}
 	
+	@Override
+	@Transactional(readOnly = true)
+	public Receita buscarPorIdComItens(Long id) {
+	    return dao.findByIdComItens(id);
+	}
 }

@@ -2,7 +2,7 @@ package com.panificadora.trentin.dao;
 
 import java.util.List;
 
-import com.panificadora.trentin.domain.Departamento;
+import com.panificadora.trentin.entities.Departamento;
 
 public interface DepartamentoDao {
 

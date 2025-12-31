@@ -1,5 +1,7 @@
 package com.panificadora.trentin.web.controllers;
 
+import java.util.ArrayList;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
@@ -10,8 +12,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import com.panificadora.trentin.domain.Receita;
-import com.panificadora.trentin.domain.UnidadeDeMedida;
+import com.panificadora.trentin.entities.Receita;
+import com.panificadora.trentin.entities.UnidadeDeMedida;
 import com.panificadora.trentin.service.InsumoService;
 import com.panificadora.trentin.service.ReceitaService;
 
@@ -27,9 +29,11 @@ public class ReceitaController {
 
 	@GetMapping("/cadastrar")
 	public String cadastrar(Receita receita, ModelMap model) {
-		model.addAttribute("insumosDisponiveis", insumoService.buscarTodos());
-		return "receita/cadastro";
+	    receita.setItens(new ArrayList<>());
+	    model.addAttribute("insumosDisponiveis", insumoService.buscarTodos());
+	    return "receita/cadastro";
 	}
+
 
 	@GetMapping("/listar")
 	public String listar(ModelMap model) {
@@ -47,9 +51,13 @@ public class ReceitaController {
 
 	@GetMapping("/editar/{id}")
 	public String preEditar(@PathVariable("id") Long id, ModelMap model) {
-		model.addAttribute("receita", receitaService.buscarPorId(id));
-		return "receita/cadastro";
+
+	    model.addAttribute("receita", receitaService.buscarPorIdComItens(id));
+	    model.addAttribute("insumosDisponiveis", insumoService.buscarTodos());
+
+	    return "receita/cadastro";
 	}
+
 
 	@PostMapping("/editar")
 	public String editar(Receita receita, RedirectAttributes attr) {

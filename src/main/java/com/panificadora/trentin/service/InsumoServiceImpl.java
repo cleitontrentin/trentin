@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.panificadora.trentin.dao.InsumoDao;
-import com.panificadora.trentin.domain.Insumo;
+import com.panificadora.trentin.entities.Insumo;
 
 @Service
 @Transactional(readOnly = false)

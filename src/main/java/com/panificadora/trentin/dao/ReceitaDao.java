@@ -2,8 +2,8 @@ package com.panificadora.trentin.dao;
 
 import java.util.List;
 
-import com.panificadora.trentin.domain.Cargo;
-import com.panificadora.trentin.domain.Receita;
+import com.panificadora.trentin.entities.Cargo;
+import com.panificadora.trentin.entities.Receita;
 
 public interface ReceitaDao {
 
@@ -16,4 +16,6 @@ public interface ReceitaDao {
     Receita findById(Long id);
 
     List<Receita> findAll();
+    
+    Receita findByIdComItens(Long id);
 }

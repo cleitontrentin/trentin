@@ -1,12 +1,11 @@
 package com.panificadora.trentin.service;
-
 import java.time.LocalDate;
 import java.util.List;
 
-import com.panificadora.trentin.domain.Funcionario;
+import com.panificadora.trentin.entities.Funcionario;
 
 public interface FuncionarioService {
-	
+
     void salvar(Funcionario funcionario);
 
     void editar(Funcionario funcionario);
@@ -21,7 +20,5 @@ public interface FuncionarioService {
 
 	List<Funcionario> buscarPorCargo(Long id);
 	
-	Object buscarPorDatas(LocalDate entrada, LocalDate saida);
-
-
+	List<Funcionario> buscarPorDatas(LocalDate entrada, LocalDate saida);
 }

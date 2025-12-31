@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.panificadora.trentin.dao.ProductDao;
-import com.panificadora.trentin.domain.Produto;
+import com.panificadora.trentin.entities.Produto;
 
 @Service
 @Transactional(readOnly = false)

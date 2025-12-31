@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.panificadora.trentin.dao.CargoDao;
-import com.panificadora.trentin.domain.Cargo;
+import com.panificadora.trentin.entities.Cargo;
 
 @Service @Transactional(readOnly = false)
 public class CargoServiceImpl implements CargoService {

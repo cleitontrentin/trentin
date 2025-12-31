@@ -2,8 +2,8 @@ package com.panificadora.trentin.service;
 
 import java.util.List;
 
-import com.panificadora.trentin.domain.MetodoPagamento;
-import com.panificadora.trentin.domain.Venda;
+import com.panificadora.trentin.entities.MetodoPagamento;
+import com.panificadora.trentin.entities.Venda;
 
 public interface VendaService {
 

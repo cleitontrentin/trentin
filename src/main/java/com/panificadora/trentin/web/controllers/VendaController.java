@@ -12,9 +12,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import com.panificadora.trentin.domain.MetodoPagamento;
-import com.panificadora.trentin.domain.Produto;
-import com.panificadora.trentin.domain.Venda;
+import com.panificadora.trentin.entities.MetodoPagamento;
+import com.panificadora.trentin.entities.Produto;
+import com.panificadora.trentin.entities.Venda;
 import com.panificadora.trentin.service.ProdutoService;
 import com.panificadora.trentin.service.VendaService;
 

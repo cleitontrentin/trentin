@@ -15,9 +15,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import com.panificadora.trentin.domain.Cargo;
-import com.panificadora.trentin.domain.Funcionario;
-import com.panificadora.trentin.domain.UF;
+import com.panificadora.trentin.entities.Cargo;
+import com.panificadora.trentin.entities.Funcionario;
+import com.panificadora.trentin.entities.UF;
 import com.panificadora.trentin.service.CargoService;
 import com.panificadora.trentin.service.FuncionarioService;
 
@@ -68,28 +68,26 @@ public class FuncionarioController {
 		return "redirect:/funcionarios/listar";
 	}	
 	
+	@GetMapping("/buscar/nome")
+	public String getPorNome(@RequestParam("nome") String nome, ModelMap model) {		
+		model.addAttribute("funcionarios", funcionarioService.buscarPorNome(nome));
+		return "/funcionario/lista";
+	}
 	
-	  @GetMapping("/buscar/nome") 
-	  public String getPorNome(@RequestParam("nome") String nome, ModelMap model) { 
-		  model.addAttribute("funcionarios",
-	      funcionarioService.buscarPorNome(nome)); 
-		  return "/funcionario/lista";
-		  }
-	  
-	  @GetMapping("/buscar/cargo") 
-	  public String getPorCargo(@RequestParam("id") Long id, ModelMap model) {
-		  model.addAttribute("funcionarios", funcionarioService.buscarPorCargo(id));
-		  return "/funcionario/lista"; 
-		  }
-	  
-	  @GetMapping("/buscar/data") 
-	  public String getPorDatas(@RequestParam("entrada") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate entrada,
-	  @RequestParam("saida") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
-	  LocalDate saida, ModelMap model) {
-	  model.addAttribute("funcionarios", funcionarioService.buscarPorDatas(entrada, saida)); 
-	  return "/funcionario/lista"; 
-	  }
-	 
+	@GetMapping("/buscar/cargo")
+	public String getPorCargo(@RequestParam("id") Long id, ModelMap model) {
+		model.addAttribute("funcionarios", funcionarioService.buscarPorCargo(id));
+		return "/funcionario/lista";
+	}		
+	
+    @GetMapping("/buscar/data")
+    public String getPorDatas(@RequestParam("entrada") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate entrada,
+                              @RequestParam("saida") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate saida,
+                              ModelMap model) {
+
+        model.addAttribute("funcionarios", funcionarioService.buscarPorDatas(entrada, saida));
+        return "/funcionario/lista";
+    }
 	
 	@ModelAttribute("cargos")
 	public List<Cargo> getCargos() {

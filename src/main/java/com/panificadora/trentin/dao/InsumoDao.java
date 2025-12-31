@@ -2,8 +2,8 @@ package com.panificadora.trentin.dao;
 
 import java.util.List;
 
-import com.panificadora.trentin.domain.Insumo;
-import com.panificadora.trentin.domain.UnidadeDeMedida;
+import com.panificadora.trentin.entities.Insumo;
+import com.panificadora.trentin.entities.UnidadeDeMedida;
 
 public interface InsumoDao {
 

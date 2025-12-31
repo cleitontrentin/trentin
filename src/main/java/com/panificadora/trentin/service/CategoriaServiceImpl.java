@@ -5,7 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.panificadora.trentin.dao.CategoriaDao;
-import com.panificadora.trentin.domain.Categoria;
+import com.panificadora.trentin.entities.Categoria;
 
 import jakarta.transaction.Transactional;
 

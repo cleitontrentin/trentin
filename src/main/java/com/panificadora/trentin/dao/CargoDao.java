@@ -2,7 +2,7 @@ package com.panificadora.trentin.dao;
 
 import java.util.List;
 
-import com.panificadora.trentin.domain.Cargo;
+import com.panificadora.trentin.entities.Cargo;
 
 public interface CargoDao {
 

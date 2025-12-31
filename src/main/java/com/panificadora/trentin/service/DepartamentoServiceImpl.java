@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.panificadora.trentin.dao.DepartamentoDao;
-import com.panificadora.trentin.domain.Departamento;
+import com.panificadora.trentin.entities.Departamento;
 
 @Service
 public class DepartamentoServiceImpl implements DepartamentoService {

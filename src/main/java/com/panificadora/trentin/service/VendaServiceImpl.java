@@ -9,11 +9,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.panificadora.trentin.dao.VendaDao;
-import com.panificadora.trentin.domain.MetodoPagamento;
-import com.panificadora.trentin.domain.Produto;
-import com.panificadora.trentin.domain.Venda;
-import com.panificadora.trentin.domain.VendaItem;
-import com.panificadora.trentin.domain.VendaStatus;
+import com.panificadora.trentin.entities.MetodoPagamento;
+import com.panificadora.trentin.entities.Produto;
+import com.panificadora.trentin.entities.Venda;
+import com.panificadora.trentin.entities.VendaItem;
+import com.panificadora.trentin.entities.VendaStatus;
 
 @Service
 @Transactional(readOnly = false)

@@ -2,7 +2,7 @@ package com.panificadora.trentin.dao;
 
 import org.springframework.stereotype.Repository;
 
-import com.panificadora.trentin.domain.Venda;
+import com.panificadora.trentin.entities.Venda;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
