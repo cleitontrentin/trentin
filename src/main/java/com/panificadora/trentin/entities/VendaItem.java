@@ -19,7 +19,7 @@ public class VendaItem extends AbstractEntity<Long> {
     @JoinColumn(name = "produto_id")
     private Produto produto;
 
-    private Integer quantidade;
+    private BigDecimal quantidade;
 
     private BigDecimal precoUnitario;
 
@@ -42,15 +42,15 @@ public class VendaItem extends AbstractEntity<Long> {
 		this.produto = produto;
 	}
 
+	
 
-
-	public Integer getQuantidade() {
+	public BigDecimal getQuantidade() {
 		return quantidade;
 	}
 
 
 
-	public void setQuantidade(int quantidade) {
+	public void setQuantidade(BigDecimal quantidade) {
 		this.quantidade = quantidade;
 	}
 
@@ -68,41 +68,32 @@ public class VendaItem extends AbstractEntity<Long> {
 
 
 
-    public BigDecimal getSubtotal() {
-        if (precoUnitario != null) {
-            return precoUnitario.multiply(BigDecimal.valueOf(quantidade));
-        }
-        return BigDecimal.ZERO;
-    }
-
-
+	public BigDecimal getSubtotal() {
+	    if (precoUnitario != null && quantidade != null) {
+	        return precoUnitario.multiply(quantidade);
+	    }
+	    return BigDecimal.ZERO;
+	}
 
 	public void setSubtotal(BigDecimal subtotal) {
 		this.subtotal = subtotal;
 	}
 
-
-
 	public Venda getVenda() {
 		return venda;
 	}
-
-
 
 	public void setVenda(Venda venda) {
 		this.venda = venda;
 	}
 
-
-
 	@PrePersist
     @PreUpdate
     public void calcularSubtotal() {
         if (precoUnitario != null && quantidade != null) {
-            subtotal = precoUnitario.multiply(BigDecimal.valueOf(quantidade));
+            subtotal = precoUnitario.multiply(quantidade);
         } else {
             subtotal = BigDecimal.ZERO;
         }
     }
-
 }

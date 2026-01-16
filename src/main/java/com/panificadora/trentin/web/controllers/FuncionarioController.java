@@ -18,6 +18,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.panificadora.trentin.entities.Cargo;
 import com.panificadora.trentin.entities.Funcionario;
 import com.panificadora.trentin.entities.UF;
+import com.panificadora.trentin.entities.Usuario;
 import com.panificadora.trentin.service.CargoService;
 import com.panificadora.trentin.service.FuncionarioService;
 
@@ -32,8 +33,10 @@ public class FuncionarioController {
 
 	@GetMapping("/cadastrar")
 	public String cadastrar(Funcionario funcionario) {
-		return "/funcionario/cadastro";
+	    funcionario.setUsuario(new Usuario());
+	    return "/funcionario/cadastro";
 	}
+
 	
 	@GetMapping("/listar")
 	public String listar(ModelMap model) {

@@ -19,7 +19,7 @@ public interface VendaService {
 	
 	Venda criarVenda();
 
-	Venda adicionarItemPorCodigo(Long vendaId, String codigo, int quantidade);
+	Venda adicionarItemPorCodigo(Long vendaId, String codigo);
 
 	Venda finalizarVenda(Long vendaId, MetodoPagamento metodoPagamento, String cliente);
 

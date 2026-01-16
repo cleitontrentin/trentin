@@ -20,6 +20,10 @@ import jakarta.persistence.Table;
 @Entity
 @Table(name = "FUNCIONARIOS")
 public class Funcionario extends AbstractEntity<Long> {
+	
+	@OneToOne(cascade = CascadeType.ALL)
+	@JoinColumn(name = "usuario_id")
+	private Usuario usuario;
 
 	@Column(nullable = false, unique = true)
 	private String nome;
@@ -91,4 +95,14 @@ public class Funcionario extends AbstractEntity<Long> {
 	public void setCargo(Cargo cargo) {
 		this.cargo = cargo;
 	}
+
+	public Usuario getUsuario() {
+		return usuario;
+	}
+
+	public void setUsuario(Usuario usuario) {
+		this.usuario = usuario;
+	}
+	
+	
 }

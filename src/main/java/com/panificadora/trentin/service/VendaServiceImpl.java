@@ -9,6 +9,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.panificadora.trentin.dao.VendaDao;
+import com.panificadora.trentin.entities.CodigoBalancaDTO;
+import com.panificadora.trentin.entities.CodigoBalancaParser;
 import com.panificadora.trentin.entities.MetodoPagamento;
 import com.panificadora.trentin.entities.Produto;
 import com.panificadora.trentin.entities.Venda;
@@ -66,32 +68,76 @@ public class VendaServiceImpl implements VendaService {
         return venda;
     }
     
-
-    @Override
-    @Transactional
-    public Venda adicionarItemPorCodigo(Long vendaId, String codigoProduto, int quantidade) {
-        Venda venda = buscarPorId(vendaId);
-        Produto produto = produtoService.findByCode(codigoProduto);
+    private void adicionarItem(Long vendaId, Produto produto, BigDecimal quantidade) {
 
         if (produto == null) {
             throw new RuntimeException("Produto não encontrado");
         }
 
-        if (produto.getStock() != null && produto.getStock() < quantidade) {
-            throw new RuntimeException("Estoque insuficiente");
+        Venda venda = buscarPorId(vendaId);
+
+        // Verifica se o item já existe na venda
+        VendaItem itemExistente = venda.getItens().stream()
+            .filter(i -> i.getProduto().getId().equals(produto.getId()))
+            .findFirst()
+            .orElse(null);
+
+        if (itemExistente != null) {
+            itemExistente.setQuantidade(
+                itemExistente.getQuantidade().add(quantidade)
+            );
+        } else {
+            VendaItem item = new VendaItem();
+            item.setVenda(venda);
+            item.setProduto(produto);
+            item.setQuantidade(quantidade);
+            item.setPrecoUnitario(produto.getPrice());
+            venda.getItens().add(item);
         }
 
-        VendaItem item = new VendaItem();
-        item.setProduto(produto);
-        item.setQuantidade(quantidade);
-        item.setPrecoUnitario(produto.getPrice());
-        item.setVenda(venda);
+        venda.recalcularTotal();
+        dao.update(venda);
+    }
 
-        venda.adicionarItem(item);
+    
+
+    @Override
+    @Transactional
+    public Venda adicionarItemPorCodigo(Long vendaId, String codigo) {
+
+        CodigoBalancaDTO dto = CodigoBalancaParser.parse(codigo);
+        Produto produto = produtoService.findByCode(dto.getCodigoProduto());
+
+        if (produto == null) {
+            throw new RuntimeException("Produto não encontrado");
+        }
+
+        Venda venda = buscarPorId(vendaId);
+
+        VendaItem item = new VendaItem();
+        item.setVenda(venda);
+        item.setProduto(produto);
+
+        if (dto.isPorValor()) {
+            item.setQuantidade(BigDecimal.ONE);       // apenas informativo
+            item.setPrecoUnitario(dto.getValor());    // valor FINAL
+            item.setSubtotal(dto.getValor());         // valor direto
+        } else {
+            item.setQuantidade(BigDecimal.ONE);
+            item.setPrecoUnitario(produto.getPrice());
+        }
+
+        venda.getItens().add(item);
+        venda.recalcularTotal();
         dao.update(venda);
 
         return venda;
     }
+
+
+
+
+
 
     @Override
     public Venda finalizarVenda(Long vendaId, MetodoPagamento metodoPagamento, String cliente) {
@@ -118,4 +164,6 @@ public class VendaServiceImpl implements VendaService {
     public Venda buscarPorIdComItens(Long id) {
         return dao.buscarPorIdComItens(id);
     }
+    
+    
 }

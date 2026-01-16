@@ -42,8 +42,15 @@
 							</div>
 
 							<div class="form-group col-md-2">
-								<label for="quantidade">Qtd</label> <input type="number"
-									id="quantidade" class="form-control" min="1" value="1">
+								<label for="quantidade">Qtd</label> 
+									<input type="text"
+									    id="quantidade"
+									    name="quantidade"
+									    class="form-control"
+									    readonly
+									    placeholder="Automático (balança)"
+									    value="1">
+
 							</div>
 
 							<div class="form-group col-md-2">
@@ -150,7 +157,6 @@ document.addEventListener("DOMContentLoaded", function () {
             },
             body: new URLSearchParams({
                 codigo: codigo,
-                quantidade: quantidade
             })
         })
         .then(response => {

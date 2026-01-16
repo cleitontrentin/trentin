@@ -32,7 +32,7 @@ public class Produto extends AbstractEntity<Long> {
 	@Column(nullable = false, columnDefinition = "DECIMAL(7,2) DEFAULT 0.00")
     private BigDecimal price;
 
-    private Integer stock;
+	private BigDecimal stock;
 
     private boolean active = true;
 
@@ -71,14 +71,14 @@ public class Produto extends AbstractEntity<Long> {
 		this.price = price;
 	}
 
-	public Integer getStock() {
+	public BigDecimal getStock() {
 		return stock;
 	}
 
-	public void setStock(Integer stock) {
+	public void setStock(BigDecimal stock) {
 		this.stock = stock;
 	}
-	
+
 	public Categoria getCategoria() {
 		return categoria;
 	}
@@ -87,17 +87,30 @@ public class Produto extends AbstractEntity<Long> {
 		this.categoria = categoria;
 	}
 
-	// --- Métodos de negócio ---
-    public void addStock(int quantity) {
-        this.stock = (this.stock == null ? 0 : this.stock) + quantity;
+	public void addStock(BigDecimal quantidade) {
+
+	    if (this.stock == null) {
+	        this.stock = BigDecimal.ZERO;
+	    }
+
+	    this.stock = this.stock.add(quantidade);
+	}
+
+
+    public void removeStock(BigDecimal quantidade) {
+
+        if (this.stock == null) {
+            this.stock = BigDecimal.ZERO;
+        }
+
+        if (this.stock.compareTo(quantidade) < 0) {
+            throw new RuntimeException(
+                "Estoque insuficiente para o produto: " + name
+            );
+        }
+
+        this.stock = this.stock.subtract(quantidade);
     }
 
-    public void removeStock(int quantity) {
-        if (this.stock != null && this.stock >= quantity) {
-            this.stock -= quantity;
-        } else {
-            throw new RuntimeException("Estoque insuficiente para o produto: " + name);
-        }
-    }
 
 }

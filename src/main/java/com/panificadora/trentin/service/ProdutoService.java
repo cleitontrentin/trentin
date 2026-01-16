@@ -1,5 +1,6 @@
 package com.panificadora.trentin.service;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 
@@ -19,8 +20,8 @@ public interface ProdutoService {
 
     Produto findByCode(String code);
 
-	void addStock(Long id, int quantity);
+    void addStock(Long id, BigDecimal quantidade);
 
-	void removeStock(Long id, int quantity);
+	void removeStock(Long id, BigDecimal quantidade);
 
 }

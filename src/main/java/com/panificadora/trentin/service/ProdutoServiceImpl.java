@@ -1,5 +1,6 @@
 package com.panificadora.trentin.service;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,7 +56,7 @@ public class ProdutoServiceImpl implements ProdutoService {
 
 	@Override
 	@Transactional
-	public void addStock(Long id, int quantity) {
+	public void addStock(Long id, BigDecimal quantity) {
 		Produto product = dao.findById(id);
 		product.addStock(quantity);
 		dao.save(product);
@@ -63,10 +64,10 @@ public class ProdutoServiceImpl implements ProdutoService {
 
 	@Override
 	@Transactional
-	public void removeStock(Long id, int quantity) {
-		Produto product = dao.findById(id);
-		product.removeStock(quantity);
-		dao.save(product);
+	public void removeStock(Long id, BigDecimal quantidade) {
+	    Produto product = dao.findById(id);
+	    product.removeStock(quantidade);
+	    dao.save(product);
 	}
 
 
