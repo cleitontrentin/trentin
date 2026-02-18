@@ -14,6 +14,8 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
 
 
@@ -86,6 +88,14 @@ public class Produto extends AbstractEntity<Long> {
 	public void setCategoria(Categoria categoria) {
 		this.categoria = categoria;
 	}
+	
+	public UnidadeDeMedida getUnidadeDeMedida() {
+		return unidadeDeMedida;
+	}
+
+	public void setUnidadeDeMedida(UnidadeDeMedida unidadeDeMedida) {
+		this.unidadeDeMedida = unidadeDeMedida;
+	}
 
 	public void addStock(BigDecimal quantidade) {
 
@@ -111,6 +121,17 @@ public class Produto extends AbstractEntity<Long> {
 
         this.stock = this.stock.subtract(quantidade);
     }
+    
+    @PrePersist
+    @PreUpdate
+    private void validarQuantidade() {
+        if (unidadeDeMedida == UnidadeDeMedida.UNIDADE) {
+            if (stock != null && stock.stripTrailingZeros().scale() > 0) {
+                throw new RuntimeException("Produto por UNIDADE não pode ter estoque fracionado");
+            }
+        }
+    }
+
 
 
 }

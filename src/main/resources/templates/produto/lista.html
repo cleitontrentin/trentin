@@ -111,7 +111,7 @@
 							<td th:text="${p.name}"></td>
 							<td th:text="${p.code}"></td>
 							<td th:text="|R$ ${{p.price}}|"></td>
-							<td th:text="${p.stock}"></td>
+							<td th:text="|${p.stock} ${p.unidadeDeMedida.descricao}|"></td>
 							<td th:text="${p.categoria.nome}">
 							<td></td>
 

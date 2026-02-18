@@ -7,6 +7,7 @@ public class CodigoBalancaDTO {
     private String codigoProduto;
     private BigDecimal valor;   // valor final
     private boolean porValor;
+    private BigDecimal quantidade;
 
     public CodigoBalancaDTO(String codigoProduto, BigDecimal valor, boolean porValor) {
         this.codigoProduto = codigoProduto;
@@ -25,5 +26,15 @@ public class CodigoBalancaDTO {
     public boolean isPorValor() {
         return porValor;
     }
+
+	public BigDecimal getQuantidade() {
+		return quantidade;
+	}
+
+	public void setQuantidade(BigDecimal quantidade) {
+		this.quantidade = quantidade;
+	}
+    
+    
 }
 

@@ -8,13 +8,11 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.PreUpdate;
 
 @SuppressWarnings("serial")
 @Entity
 public class VendaItem extends AbstractEntity<Long> {
-	
+
     @ManyToOne
     @JoinColumn(name = "produto_id")
     private Produto produto;
@@ -23,77 +21,51 @@ public class VendaItem extends AbstractEntity<Long> {
 
     private BigDecimal precoUnitario;
 
-    private BigDecimal subtotal;
-    
     @JsonBackReference
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "venda_id")
     private Venda venda;
-    
-    
-    
+
     public Produto getProduto() {
-		return produto;
-	}
+        return produto;
+    }
 
+    public void setProduto(Produto produto) {
+        this.produto = produto;
+    }
 
+    public BigDecimal getQuantidade() {
+        return quantidade;
+    }
 
-	public void setProduto(Produto produto) {
-		this.produto = produto;
-	}
+    public void setQuantidade(BigDecimal quantidade) {
+        this.quantidade = quantidade;
+    }
 
-	
+    public BigDecimal getPrecoUnitario() {
+        return precoUnitario;
+    }
 
-	public BigDecimal getQuantidade() {
-		return quantidade;
-	}
+    public void setPrecoUnitario(BigDecimal precoUnitario) {
+        this.precoUnitario = precoUnitario;
+    }
 
-
-
-	public void setQuantidade(BigDecimal quantidade) {
-		this.quantidade = quantidade;
-	}
-
-
-
-	public BigDecimal getPrecoUnitario() {
-		return precoUnitario;
-	}
-
-
-
-	public void setPrecoUnitario(BigDecimal precoUnitario) {
-		this.precoUnitario = precoUnitario;
-	}
-
-
-
-	public BigDecimal getSubtotal() {
-	    if (precoUnitario != null && quantidade != null) {
-	        return precoUnitario.multiply(quantidade);
-	    }
-	    return BigDecimal.ZERO;
-	}
-
-	public void setSubtotal(BigDecimal subtotal) {
-		this.subtotal = subtotal;
-	}
-
-	public Venda getVenda() {
-		return venda;
-	}
-
-	public void setVenda(Venda venda) {
-		this.venda = venda;
-	}
-
-	@PrePersist
-    @PreUpdate
-    public void calcularSubtotal() {
-        if (precoUnitario != null && quantidade != null) {
-            subtotal = precoUnitario.multiply(quantidade);
-        } else {
-            subtotal = BigDecimal.ZERO;
+    /**
+     * Subtotal sempre calculado dinamicamente.
+     * NFC-e usa: vProd = qCom × vUnCom
+     */
+    public BigDecimal getSubtotal() {
+        if (precoUnitario == null || quantidade == null) {
+            return BigDecimal.ZERO;
         }
+        return precoUnitario.multiply(quantidade);
+    }
+
+    public Venda getVenda() {
+        return venda;
+    }
+
+    public void setVenda(Venda venda) {
+        this.venda = venda;
     }
 }

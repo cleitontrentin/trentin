@@ -16,5 +16,9 @@ public enum UnidadeDeMedida {
     public String getUnidadeDeMedida() {
         return descricao;
     }
+    
+    public String getDescricao() {
+        return descricao;
+    }
 
 }

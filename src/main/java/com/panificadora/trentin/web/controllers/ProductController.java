@@ -14,6 +14,7 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.panificadora.trentin.entities.Categoria;
 import com.panificadora.trentin.entities.Produto;
+import com.panificadora.trentin.entities.UnidadeDeMedida;
 import com.panificadora.trentin.service.CategoriaService;
 import com.panificadora.trentin.service.ProdutoService;
 
@@ -62,6 +63,12 @@ public class ProductController {
 	public List<Categoria> listaDeCategorias() {
 		return categoriaService.buscarTodos();
 	}
+	
+	@ModelAttribute("unidades")
+	public UnidadeDeMedida[] unidades() {
+	    return UnidadeDeMedida.values();
+	}
+
 
 	 
 }

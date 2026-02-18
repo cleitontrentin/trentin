@@ -1,5 +1,7 @@
 <!DOCTYPE html>
-<html layout:decorate="~{layout}">
+<html xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{layout}">
 <head>
 <meta charset="UTF-8" />
 </head>
@@ -14,12 +16,12 @@
 				</ul>
 			</div>
 			<a class="btn btn-novo-listar btn-md" href="/produtos/listar"
-				role="button"> <span class="oi oi-spreadsheet" title="Cadastro"
-				aria-hidden="true"></span> <span>Listar Produtos</span>
+				role="button"> <span class="oi oi-spreadsheet"></span> <span>Listar
+					Produtos</span>
 			</a>
 		</nav>
-		<div class="container" id="cadastro">
 
+		<div class="container" id="cadastro">
 			<div th:replace="fragments/alert"></div>
 
 			<form
@@ -27,39 +29,40 @@
 				th:object="${produto}" method="POST">
 
 				<div class="form-row">
-
-
 					<div class="form-group col-md-6">
-						<label for="name">Nome do Produto</label> <input type="text"
-							class="form-control" id="name" placeholder="Ex: Pão Francês"
-							th:field="*{name}" autofocus="autofocus" />
-						<div class="invalid-feedback"></div>
-					</div>
-					<div class="form-group col-md-6">
-						<label class="form-label">Código</label> <input type="text"
-							th:field="*{code}" class="form-control"
-							placeholder="Código de barras ou SKU" required>
-						<div class="invalid-feedback"></div>
+						<label>Nome do Produto</label> <input type="text"
+							class="form-control" th:field="*{name}" autofocus />
 					</div>
 
+					<div class="form-group col-md-6">
+						<label>Código</label> <input type="text" class="form-control"
+							th:field="*{code}" required />
+					</div>
 				</div>
+
 				<div class="form-row">
 					<div class="form-group col-md-4">
-						<label for="price">Preço (R$)</label> <input type="text"
-							class="form-control" id="price" data-mask="#.##0,00"
-							data-mask-reverse="true" placeholder="0,00" th:field="*{price}" />
-						<div class="invalid-feedback"></div>
+						<label>Preço (R$)</label> <input type="text" class="form-control"
+							th:field="*{price}" />
 					</div>
 
 					<div class="form-group col-md-4">
-						<label for="quantity">Quantidade em Estoque</label> <input
-							type="number" class="form-control" id="quantity" min="0"
-							placeholder="Ex: 50" th:field="*{stock}" />
-						<div class="invalid-feedback"></div>
+						<label>Unidade de Medida</label> <select
+							th:field="*{unidadeDeMedida}" class="form-control">
+							<option value="">Selecione</option>
+							<option th:each="u : ${unidades}" th:value="${u}"
+								th:text="${u.descricao}"></option>
+						</select>
 					</div>
+
 					<div class="form-group col-md-4">
-						<label for="categoria">Categoria</label> <select id="categoria"
-							class="form-control" th:field="*{categoria}">
+						<label>Quantidade em Estoque</label> <input type="number"
+							class="form-control" min="0" step="any" th:field="*{stock}" />
+					</div>
+
+					<div class="form-group col-md-4">
+						<label>Categoria</label> <select class="form-control"
+							th:field="*{categoria}">
 							<option value="">Selecione</option>
 							<option th:each="d : ${categorias}" th:value="${d.id}"
 								th:text="${d.nome}"></option>
@@ -67,14 +70,12 @@
 					</div>
 				</div>
 
+				<input type="hidden" th:field="*{id}" />
 
-
-				<input type="hidden" id="id" th:field="*{id}" />
-
-				<button type="submit" class="btn btn-novo-listar btn-md">Salvar</button>
+				<button type="submit" class="btn btn-novo-listar btn-md">
+					Salvar</button>
 			</form>
 		</div>
 	</section>
-
 </body>
 </html>

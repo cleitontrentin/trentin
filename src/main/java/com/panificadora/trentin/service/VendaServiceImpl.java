@@ -113,6 +113,8 @@ public class VendaServiceImpl implements VendaService {
         }
 
         Venda venda = buscarPorId(vendaId);
+        
+        
 
         VendaItem item = new VendaItem();
         item.setVenda(venda);
@@ -121,7 +123,6 @@ public class VendaServiceImpl implements VendaService {
         if (dto.isPorValor()) {
             item.setQuantidade(BigDecimal.ONE);       // apenas informativo
             item.setPrecoUnitario(dto.getValor());    // valor FINAL
-            item.setSubtotal(dto.getValor());         // valor direto
         } else {
             item.setQuantidade(BigDecimal.ONE);
             item.setPrecoUnitario(produto.getPrice());
