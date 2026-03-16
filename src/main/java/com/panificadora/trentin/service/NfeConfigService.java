@@ -31,7 +31,6 @@ public class NfeConfigService {
                 senhaCertificado
         );
 
-        // ASSINATURA CORRETA DA 4.00.48
         return ConfiguracoesNfe.criarConfiguracoes(
                 EstadosEnum.valueOf(estado),
                 AmbienteEnum.valueOf(ambiente),

@@ -19,13 +19,15 @@ public class VendaDaoImpl extends AbstractDao<Venda, Long> implements VendaDao {
     @Override
     public Venda buscarPorIdComItens(Long id) {
         try {
-            return em.createQuery(
-                "SELECT v FROM Venda v " +
-                "LEFT JOIN FETCH v.itens i " +
-                "LEFT JOIN FETCH i.produto " +
-                "WHERE v.id = :id", Venda.class)
-                .setParameter("id", id)
-                .getSingleResult();
+        	return em.createQuery(
+        		    "SELECT v FROM Venda v " +
+        		    "LEFT JOIN FETCH v.itens i " +
+        		    "LEFT JOIN FETCH i.produto " +
+        		    "WHERE v.id = :id", Venda.class)
+        		    .setParameter("id", id)
+        		    .getResultStream()
+        		    .findFirst()
+        		    .orElse(null);
         } catch (NoResultException e) {
             return null;
         }

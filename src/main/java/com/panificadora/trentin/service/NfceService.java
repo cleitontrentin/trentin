@@ -1,17 +1,19 @@
 package com.panificadora.trentin.service;
 
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.panificadora.trentin.entities.XmlGenerator;
+import com.panificadora.trentin.entities.Venda;
+import com.panificadora.trentin.fiscal.NfceBuilder;
 
-import br.com.swconsultoria.nfe.Assinar;
+import br.com.swconsultoria.nfe.Nfe;
+
 import br.com.swconsultoria.nfe.dom.ConfiguracoesNfe;
-import br.com.swconsultoria.nfe.dom.enuns.AssinaturaEnum;
+import br.com.swconsultoria.nfe.dom.enuns.DocumentoEnum;
+
 import br.com.swconsultoria.nfe.schema_4.enviNFe.TNFe;
+import br.com.swconsultoria.nfe.schema_4.enviNFe.TEnviNFe;
+import br.com.swconsultoria.nfe.schema_4.enviNFe.TRetEnviNFe;
 
 @Service
 public class NfceService {
@@ -19,62 +21,29 @@ public class NfceService {
     @Autowired
     private NfeConfigService configService;
 
-    public void emitirNfceHomologacao() throws Exception {
+    @Autowired
+    private NfceBuilder nfceBuilder;
+
+    public void emitirNfceHomologacao(Venda venda) throws Exception {
 
         ConfiguracoesNfe config = configService.getConfiguracoesNfe();
 
-        // ===============================
-        // 1️⃣ NFC-e (enviNFe)
-        // ===============================
-        TNFe nfe = new TNFe();
-        TNFe.InfNFe infNFe = new TNFe.InfNFe();
+        TNFe nfe = nfceBuilder.montarNfce(venda, config);
 
-        infNFe.setId("NFe" + "CHAVE_AQUI"); // depois geramos
-        infNFe.setVersao("4.00");
+        TEnviNFe lote = new TEnviNFe();
+        lote.setVersao("4.00");
+        lote.setIdLote("1");
+        lote.setIndSinc("1");
 
-        // -------------------------------
-        // IDE
-        // -------------------------------
-        TNFe.InfNFe.Ide ide = new TNFe.InfNFe.Ide();
-        ide.setCUF("41"); // Paraná
-        ide.setNatOp("VENDA");
-        ide.setMod("65"); // NFC-e
-        ide.setSerie("1");
-        ide.setNNF("1");
+        lote.getNFe().add(nfe);
 
-        ide.setDhEmi(
-            OffsetDateTime
-                .now(ZoneOffset.of("-03:00"))
-                .toString()
-        );
-
-        ide.setTpNF("1");        // saída
-        ide.setIdDest("1");      // consumidor final
-        ide.setTpEmis("1");      // normal
-        ide.setTpAmb(config.getAmbiente().getCodigo());
-        ide.setFinNFe("1");      // normal
-        ide.setIndFinal("1");    // consumidor final
-        ide.setIndPres("1");     // presencial
-        ide.setProcEmi("0");     // app do contribuinte
-        ide.setVerProc("1.0");
-
-        infNFe.setIde(ide);
-        nfe.setInfNFe(infNFe);
-
-        // ===============================
-        // 2️⃣ XML
-        // ===============================
-        String xml = XmlGenerator.gerarXml(nfe);
-
-        // ===============================
-        // 3️⃣ Assinatura
-        // ===============================
-        String xmlAssinado = Assinar.assinaNfe(
+        TRetEnviNFe retorno = Nfe.enviarNfe(
                 config,
-                xml,
-                AssinaturaEnum.NFE
+                lote,
+                DocumentoEnum.NFE
         );
 
-        System.out.println("XML ASSINADO:\n" + xmlAssinado);
+        System.out.println("STATUS: " + retorno.getCStat());
+        System.out.println("MOTIVO: " + retorno.getXMotivo());
     }
 }

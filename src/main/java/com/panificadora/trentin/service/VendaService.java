@@ -18,10 +18,14 @@ public interface VendaService {
 	List<Venda> buscarTodos();
 	
 	Venda criarVenda();
+	
+	Venda removerItem(Long vendaId, Long itemId);
 
 	Venda adicionarItemPorCodigo(Long vendaId, String codigo);
 
 	Venda finalizarVenda(Long vendaId, MetodoPagamento metodoPagamento, String cliente);
 
 	Venda buscarPorIdComItens(Long id);
+	
+	 public byte[] gerarDanfe(Venda venda);
 }

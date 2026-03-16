@@ -69,3 +69,4 @@ public class VendaItem extends AbstractEntity<Long> {
         this.venda = venda;
     }
 }
+

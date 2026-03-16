@@ -1,8 +1,12 @@
 package com.panificadora.trentin.service;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -16,6 +20,11 @@ import com.panificadora.trentin.entities.Produto;
 import com.panificadora.trentin.entities.Venda;
 import com.panificadora.trentin.entities.VendaItem;
 import com.panificadora.trentin.entities.VendaStatus;
+
+import net.sf.jasperreports.engine.JasperExportManager;
+import net.sf.jasperreports.engine.JasperFillManager;
+import net.sf.jasperreports.engine.JasperPrint;
+import net.sf.jasperreports.engine.data.JRXmlDataSource;
 
 @Service
 @Transactional(readOnly = false)
@@ -135,11 +144,6 @@ public class VendaServiceImpl implements VendaService {
         return venda;
     }
 
-
-
-
-
-
     @Override
     public Venda finalizarVenda(Long vendaId, MetodoPagamento metodoPagamento, String cliente) {
         Venda venda = buscarPorId(vendaId);
@@ -162,9 +166,54 @@ public class VendaServiceImpl implements VendaService {
         return venda;
     }
     
+    
+    
     public Venda buscarPorIdComItens(Long id) {
         return dao.buscarPorIdComItens(id);
     }
+
+	@Override
+	public Venda removerItem(Long vendaId, Long itemId) {
+		Venda venda = buscarPorId(vendaId);
+
+	    venda.getItens().removeIf(item -> item.getId().equals(itemId));
+
+	    venda.recalcularTotal();
+	    dao.update(venda);
+
+	    return venda;
+	}
+	
+	@Override
+	public byte[] gerarDanfe(Venda venda) {
+
+	    try {
+
+	        String xml = venda.getXmlNfce();
+
+	        if (xml == null || xml.isEmpty()) {
+	            throw new RuntimeException("XML da NFC-e não encontrado.");
+	        }
+
+	        InputStream report = getClass()
+	            .getResourceAsStream("/danfe/nfce.jasper");
+
+	        Map<String, Object> parametros = new HashMap<>();
+
+	        JRXmlDataSource xmlDataSource =
+	            new JRXmlDataSource(new ByteArrayInputStream(xml.getBytes()));
+
+	        JasperPrint print = JasperFillManager.fillReport(
+	                report,
+	                parametros,
+	                xmlDataSource);
+
+	        return JasperExportManager.exportReportToPdf(print);
+
+	    } catch (Exception e) {
+	        throw new RuntimeException("Erro ao gerar DANFE", e);
+	    }
+	}
     
     
 }

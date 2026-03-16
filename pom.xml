@@ -106,6 +106,12 @@
 			<artifactId>java-nfe</artifactId>
 			<version>4.00.48</version>
 		</dependency>
+
+		<dependency>
+			<groupId>net.sf.jasperreports</groupId>
+			<artifactId>jasperreports</artifactId>
+			<version>6.21.0</version>
+		</dependency>
 	</dependencies>
 
 	<build>
