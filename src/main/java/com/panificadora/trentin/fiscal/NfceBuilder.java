@@ -1,13 +1,19 @@
 package com.panificadora.trentin.fiscal;
 
-import java.time.LocalDateTime;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.security.MessageDigest;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.Random;
 
+import javax.xml.bind.JAXBElement;
+import javax.xml.namespace.QName;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.panificadora.trentin.entities.MetodoPagamento;
 import com.panificadora.trentin.entities.Venda;
 import com.panificadora.trentin.entities.VendaItem;
 import com.panificadora.trentin.service.NfceNumeroService;
@@ -17,278 +23,335 @@ import br.com.swconsultoria.nfe.schema_4.enviNFe.TEnderEmi;
 import br.com.swconsultoria.nfe.schema_4.enviNFe.TNFe;
 import br.com.swconsultoria.nfe.schema_4.enviNFe.TUfEmi;
 
-import javax.xml.bind.JAXBElement;
-import javax.xml.namespace.QName;
-
 @Service
 public class NfceBuilder {
 
-	@Autowired
-	private NfceNumeroService numeroService;
+    @Autowired
+    private NfceNumeroService numeroService;
 
-	public TNFe montarNfce(Venda venda, ConfiguracoesNfe config) {
+    private static final String CSC = "SEU_CSC_AQUI";
+    private static final String ID_CSC = "000001";
 
-		TNFe nfe = new TNFe();
-		TNFe.InfNFe inf = new TNFe.InfNFe();
+    private String formatarDecimal(BigDecimal valor) {
+        return valor.setScale(2, RoundingMode.HALF_UP).toPlainString();
+    }
 
-		inf.setVersao("4.00");
+    private String formatarQuantidade(BigDecimal valor) {
+        return valor.setScale(4, RoundingMode.HALF_UP).stripTrailingZeros().toPlainString();
+    }
 
-		TNFe.InfNFe.Ide ide = montarIde(venda, config);
-		TNFe.InfNFe.Emit emit = montarEmitente();
+    public TNFe montarNfce(Venda venda, ConfiguracoesNfe config) {
 
-		inf.setIde(ide);
-		inf.setEmit(emit);
-		inf.setDest(montarDestinatario());
+        TNFe nfe = new TNFe();
+        TNFe.InfNFe inf = new TNFe.InfNFe();
 
-		montarProdutos(venda, inf);
+        inf.setVersao("4.00");
 
-		inf.setTotal(montarTotal(venda));
-		inf.setTransp(montarTransporte());
-		inf.setPag(montarPagamento(venda));
+        TNFe.InfNFe.Ide ide = montarIde(config);
+        TNFe.InfNFe.Emit emit = montarEmitente();
 
-		String data = ide.getDhEmi().substring(2, 4) + ide.getDhEmi().substring(5, 7);
+        inf.setIde(ide);
+        inf.setEmit(emit);
 
-		String chave = gerarChaveNfe(ide.getCUF(), data, emit.getCNPJ(), ide.getMod(), ide.getSerie(), ide.getNNF(),
-				ide.getTpEmis(), ide.getCNF());
+        montarProdutos(venda, inf);
 
-		inf.setId("NFe" + chave);
+        inf.setTotal(montarTotal(venda));
+        inf.setTransp(montarTransporte());
+        inf.setPag(montarPagamento(venda));
 
-		venda.setChaveNfce(chave);
-		venda.setNumeroNfce(ide.getNNF());
-		venda.setDataEmissaoNfce(LocalDateTime.now());
+        // 🔑 CHAVE
+        String data = ide.getDhEmi().substring(2, 4) + ide.getDhEmi().substring(5, 7);
 
-		nfe.setInfNFe(inf);
+        String chave = gerarChaveNfe(
+                ide.getCUF(),
+                data,
+                emit.getCNPJ(),
+                ide.getMod(),
+                ide.getSerie(),
+                ide.getNNF(),
+                ide.getTpEmis(),
+                ide.getCNF()
+        );
 
-		return nfe;
-	}
+        ide.setCDV(chave.substring(chave.length() - 1));
+        inf.setId("NFe" + chave);
 
-	private TNFe.InfNFe.Ide montarIde(Venda venda, ConfiguracoesNfe config) {
+        nfe.setInfNFe(inf);
 
-		TNFe.InfNFe.Ide ide = new TNFe.InfNFe.Ide();
+        // 🔥 SUPLEMENTO (QR CODE)
+        TNFe.InfNFeSupl supl = new TNFe.InfNFeSupl();
 
-		ide.setCUF("41");
-		ide.setNatOp("VENDA");
-		ide.setMod("65");
-		ide.setSerie("1");
+        String qrCode = gerarQrCode(chave, config.getAmbiente().getCodigo());
+        supl.setQrCode(qrCode);
 
-		String numero = numeroService.gerarProximoNumero();
-		ide.setNNF(numero);
+        supl.setUrlChave("http://www.fazenda.pr.gov.br/nfce/qrcode");
 
-		ide.setCNF(gerarCodigoNumerico());
+        nfe.setInfNFeSupl(supl);
 
-		ide.setDhEmi(OffsetDateTime.now(ZoneOffset.of("-03:00")).withNano(0).toString());
+        return nfe;
+    }
 
-		ide.setTpNF("1");
-		ide.setIdDest("1");
-		ide.setTpEmis("1");
-		ide.setTpAmb(config.getAmbiente().getCodigo());
-		ide.setFinNFe("1");
-		ide.setIndFinal("1");
-		ide.setIndPres("1");
-		ide.setProcEmi("0");
-		ide.setVerProc("1.0");
+    private String gerarQrCode(String chave, String tpAmb) {
+        try {
 
-		return ide;
-	}
+            String url = "http://www.fazenda.pr.gov.br/nfce/qrcode";
 
-	private TNFe.InfNFe.Emit montarEmitente() {
+            String dados = "chNFe=" + chave +
+                    "&nVersao=100" +
+                    "&tpAmb=" + tpAmb +
+                    "&cIdToken=" + ID_CSC;
 
-		TNFe.InfNFe.Emit emit = new TNFe.InfNFe.Emit();
+            String hash = sha1(dados + CSC);
 
-		emit.setCNPJ("10755198000177");
-		emit.setXNome("PANIFICADORA TRENTIN LTDA");
-		emit.setXFant("PANIFICADORA TRENTIN");
-		emit.setIE("9047633904");
-		emit.setCRT("1");
+            return url + "?" + dados + "&cHashQRCode=" + hash;
 
-		TEnderEmi ender = new TEnderEmi();
+        } catch (Exception e) {
+            throw new RuntimeException("Erro ao gerar QRCode", e);
+        }
+    }
 
-		ender.setXLgr("RUA EXEMPLO");
-		ender.setNro("123");
-		ender.setXBairro("CENTRO");
-		ender.setCMun("4108304");
-		ender.setXMun("FOZ DO IGUACU");
-		ender.setUF(TUfEmi.PR);
-		ender.setCEP("85800000");
-		ender.setCPais("1058");
-		ender.setXPais("BRASIL");
+    private String sha1(String value) throws Exception {
+        MessageDigest md = MessageDigest.getInstance("SHA-1");
+        byte[] bytes = md.digest(value.getBytes("UTF-8"));
 
-		emit.setEnderEmit(ender);
+        StringBuilder sb = new StringBuilder();
+        for (byte b : bytes) {
+            sb.append(String.format("%02X", b));
+        }
+        return sb.toString();
+    }
 
-		return emit;
-	}
+    private TNFe.InfNFe.Ide montarIde(ConfiguracoesNfe config) {
+        TNFe.InfNFe.Ide ide = new TNFe.InfNFe.Ide();
 
-	private TNFe.InfNFe.Dest montarDestinatario() {
+        ide.setCUF("41");
+        ide.setNatOp("VENDA");
+        ide.setMod("65");
+        ide.setSerie("1");
 
-		TNFe.InfNFe.Dest dest = new TNFe.InfNFe.Dest();
+        ide.setNNF(numeroService.gerarProximoNumero());
+        ide.setCNF(gerarCodigoNumerico());
 
-		dest.setXNome("CONSUMIDOR NAO IDENTIFICADO");
-		dest.setIndIEDest("9");
+        ide.setDhEmi(OffsetDateTime.now(ZoneOffset.of("-03:00")).withNano(0).toString());
 
-		return dest;
-	}
+        ide.setTpNF("1");
+        ide.setIdDest("1");
+        ide.setCMunFG("4108304");
 
-	private void montarProdutos(Venda venda, TNFe.InfNFe inf) {
+        ide.setTpImp("4");
+        ide.setTpEmis("1");
 
-		int item = 1;
+        ide.setTpAmb(config.getAmbiente().getCodigo());
+        ide.setFinNFe("1");
+        ide.setIndFinal("1");
+        ide.setIndPres("1");
+        ide.setProcEmi("0");
+        ide.setVerProc("1.0");
 
-		for (VendaItem vendaItem : venda.getItens()) {
+        return ide;
+    }
 
-			TNFe.InfNFe.Det det = new TNFe.InfNFe.Det();
-			det.setNItem(String.valueOf(item++));
+    private TNFe.InfNFe.Emit montarEmitente() {
+        TNFe.InfNFe.Emit emit = new TNFe.InfNFe.Emit();
 
-			TNFe.InfNFe.Det.Prod prod = new TNFe.InfNFe.Det.Prod();
+        emit.setCNPJ("10755198000177");
+        emit.setXNome("PANIFICADORA TRENTIN LTDA");
+        emit.setXFant("PANIFICADORA TRENTIN");
 
-			prod.setCProd(vendaItem.getProduto().getCode() != null ? vendaItem.getProduto().getCode() : "1");
+        TEnderEmi ender = new TEnderEmi();
+        ender.setXLgr("AVENIDA POR DO SOL");
+        ender.setNro("1068");
+        ender.setXBairro("JARDIM SÃO PAULO");
+        ender.setCMun("4108304");
+        ender.setXMun("FOZ DO IGUACU");
+        ender.setUF(TUfEmi.PR);
+        ender.setCEP("85856430");
+        ender.setCPais("1058");
+        ender.setXPais("BRASIL");
 
-			prod.setCEAN("SEM GTIN");
-			prod.setXProd(vendaItem.getProduto().getName());
-			prod.setNCM("19059090");
-			prod.setCFOP("5102");
+        emit.setEnderEmit(ender);
 
-			prod.setUCom("UN");
-			prod.setQCom(vendaItem.getQuantidade().toString());
-			prod.setVUnCom(vendaItem.getPrecoUnitario().toString());
-			prod.setVProd(vendaItem.getSubtotal().toString());
+        emit.setIE("9047633904");
+        emit.setCRT("1");
 
-			prod.setCEANTrib("SEM GTIN");
-			prod.setUTrib("UN");
-			prod.setQTrib(vendaItem.getQuantidade().toString());
-			prod.setVUnTrib(vendaItem.getPrecoUnitario().toString());
+        return emit;
+    }
 
-			prod.setIndTot("1");
+    // (resto da sua classe continua exatamente igual)
+}
 
-			det.setProd(prod);
+    private void montarProdutos(Venda venda, TNFe.InfNFe inf) {
 
-			// =========================
-			// IMPOSTOS
-			// =========================
+        int item = 1;
 
-			TNFe.InfNFe.Det.Imposto imposto = new TNFe.InfNFe.Det.Imposto();
+        for (VendaItem vendaItem : venda.getItens()) {
 
-			// ICMS
-			TNFe.InfNFe.Det.Imposto.ICMS icms = new TNFe.InfNFe.Det.Imposto.ICMS();
+            TNFe.InfNFe.Det det = new TNFe.InfNFe.Det();
+            det.setNItem(String.valueOf(item++));
 
-			TNFe.InfNFe.Det.Imposto.ICMS.ICMSSN102 icmssn102 = new TNFe.InfNFe.Det.Imposto.ICMS.ICMSSN102();
+            TNFe.InfNFe.Det.Prod prod = new TNFe.InfNFe.Det.Prod();
 
-			icmssn102.setOrig("0");
-			icmssn102.setCSOSN("102");
+            prod.setCProd(vendaItem.getProduto().getCode() != null ?
+                    vendaItem.getProduto().getCode() : "1");
 
-			icms.setICMSSN102(icmssn102);
+            prod.setCEAN("SEM GTIN");
+            prod.setXProd(vendaItem.getProduto().getName());
+            prod.setNCM("19059090");
+            prod.setCFOP("5102");
 
-			imposto.getContent().add(new JAXBElement<>(new QName("http://www.portalfiscal.inf.br/nfe", "ICMS"),
-					TNFe.InfNFe.Det.Imposto.ICMS.class, icms));
+            prod.setUCom("UN");
+            prod.setQCom(formatarQuantidade(vendaItem.getQuantidade()));
+            prod.setVUnCom(formatarDecimal(vendaItem.getPrecoUnitario()));
+            prod.setVProd(formatarDecimal(vendaItem.getSubtotal()));
 
-			// PIS
-			TNFe.InfNFe.Det.Imposto.PIS pis = new TNFe.InfNFe.Det.Imposto.PIS();
+            prod.setCEANTrib("SEM GTIN");
+            prod.setUTrib("UN");
+            prod.setQTrib(formatarQuantidade(vendaItem.getQuantidade()));
+            prod.setVUnTrib(formatarDecimal(vendaItem.getPrecoUnitario()));
 
-			TNFe.InfNFe.Det.Imposto.PIS.PISNT pisnt = new TNFe.InfNFe.Det.Imposto.PIS.PISNT();
+            prod.setIndTot("1");
 
-			pisnt.setCST("07");
+            det.setProd(prod);
 
-			pis.setPISNT(pisnt);
+            TNFe.InfNFe.Det.Imposto imposto = new TNFe.InfNFe.Det.Imposto();
 
-			imposto.getContent().add(new JAXBElement<>(new QName("http://www.portalfiscal.inf.br/nfe", "PIS"),
-					TNFe.InfNFe.Det.Imposto.PIS.class, pis));
+            // ICMS
+            TNFe.InfNFe.Det.Imposto.ICMS icms = new TNFe.InfNFe.Det.Imposto.ICMS();
+            TNFe.InfNFe.Det.Imposto.ICMS.ICMSSN102 icms102 = new TNFe.InfNFe.Det.Imposto.ICMS.ICMSSN102();
 
-			// COFINS
-			TNFe.InfNFe.Det.Imposto.COFINS cofins = new TNFe.InfNFe.Det.Imposto.COFINS();
+            icms102.setOrig("0");
+            icms102.setCSOSN("102");
 
-			TNFe.InfNFe.Det.Imposto.COFINS.COFINSNT cofinsnt = new TNFe.InfNFe.Det.Imposto.COFINS.COFINSNT();
+            icms.setICMSSN102(icms102);
 
-			cofinsnt.setCST("07");
+            imposto.getContent().add(new JAXBElement<>(
+                    new QName("http://www.portalfiscal.inf.br/nfe", "ICMS"),
+                    TNFe.InfNFe.Det.Imposto.ICMS.class, icms));
 
-			cofins.setCOFINSNT(cofinsnt);
+            // PIS
+            TNFe.InfNFe.Det.Imposto.PIS pis = new TNFe.InfNFe.Det.Imposto.PIS();
+            TNFe.InfNFe.Det.Imposto.PIS.PISNT pisnt = new TNFe.InfNFe.Det.Imposto.PIS.PISNT();
 
-			imposto.getContent().add(new JAXBElement<>(new QName("http://www.portalfiscal.inf.br/nfe", "COFINS"),
-					TNFe.InfNFe.Det.Imposto.COFINS.class, cofins));
+            pisnt.setCST("07");
+            pis.setPISNT(pisnt);
 
-			det.setImposto(imposto);
-			inf.getDet().add(det);
-		}
-	}
+            imposto.getContent().add(new JAXBElement<>(
+                    new QName("http://www.portalfiscal.inf.br/nfe", "PIS"),
+                    TNFe.InfNFe.Det.Imposto.PIS.class, pis));
 
-	private TNFe.InfNFe.Total montarTotal(Venda venda) {
+            // COFINS
+            TNFe.InfNFe.Det.Imposto.COFINS cofins = new TNFe.InfNFe.Det.Imposto.COFINS();
+            TNFe.InfNFe.Det.Imposto.COFINS.COFINSNT cofinsnt = new TNFe.InfNFe.Det.Imposto.COFINS.COFINSNT();
 
-		TNFe.InfNFe.Total total = new TNFe.InfNFe.Total();
-		TNFe.InfNFe.Total.ICMSTot icmsTot = new TNFe.InfNFe.Total.ICMSTot();
+            cofinsnt.setCST("07");
+            cofins.setCOFINSNT(cofinsnt);
 
-		icmsTot.setVProd(venda.getTotal().toString());
-		icmsTot.setVNF(venda.getTotal().toString());
+            imposto.getContent().add(new JAXBElement<>(
+                    new QName("http://www.portalfiscal.inf.br/nfe", "COFINS"),
+                    TNFe.InfNFe.Det.Imposto.COFINS.class, cofins));
 
-		icmsTot.setVBC("0.00");
-		icmsTot.setVICMS("0.00");
-		icmsTot.setVICMSDeson("0.00");
-		icmsTot.setVFCP("0.00");
+            det.setImposto(imposto);
+            inf.getDet().add(det);
+        }
+    }
 
-		icmsTot.setVBCST("0.00");
-		icmsTot.setVST("0.00");
-		icmsTot.setVFCPST("0.00");
-		icmsTot.setVFCPSTRet("0.00");
+    private TNFe.InfNFe.Total montarTotal(Venda venda) {
 
-		icmsTot.setVFrete("0.00");
-		icmsTot.setVSeg("0.00");
-		icmsTot.setVDesc("0.00");
+        TNFe.InfNFe.Total total = new TNFe.InfNFe.Total();
+        TNFe.InfNFe.Total.ICMSTot icms = new TNFe.InfNFe.Total.ICMSTot();
 
-		icmsTot.setVII("0.00");
-		icmsTot.setVIPI("0.00");
-		icmsTot.setVIPIDevol("0.00");
+        icms.setVBC("0.00");
+        icms.setVICMS("0.00");
 
-		icmsTot.setVPIS("0.00");
-		icmsTot.setVCOFINS("0.00");
-		icmsTot.setVOutro("0.00");
+        // 🔥 ESSENCIAL pro PR (mesmo zerado)
+        icms.setVICMSDeson("0.00");
 
-		total.setICMSTot(icmsTot);
+        // pode colocar esses zerados pra evitar rejeição futura
+        icms.setVFCP("0.00");
+        icms.setVBCST("0.00");
+        icms.setVST("0.00");
+        icms.setVFCPST("0.00");
+        icms.setVFCPSTRet("0.00");
 
-		return total;
-	}
+        // agora sim valores principais
+        icms.setVProd(formatarDecimal(venda.getTotal()));
 
-	private TNFe.InfNFe.Transp montarTransporte() {
+        icms.setVFrete("0.00");
+        icms.setVSeg("0.00");
+        icms.setVDesc("0.00");
+        icms.setVII("0.00");
+        icms.setVIPI("0.00");
+        icms.setVIPIDevol("0.00");
 
-		TNFe.InfNFe.Transp transp = new TNFe.InfNFe.Transp();
-		transp.setModFrete("9");
+        icms.setVPIS("0.00");
+        icms.setVCOFINS("0.00");
 
-		return transp;
-	}
+        icms.setVOutro("0.00");
 
-	private TNFe.InfNFe.Pag montarPagamento(Venda venda) {
+        icms.setVNF(formatarDecimal(venda.getTotal()));
 
-		TNFe.InfNFe.Pag pag = new TNFe.InfNFe.Pag();
-		TNFe.InfNFe.Pag.DetPag det = new TNFe.InfNFe.Pag.DetPag();
+        // 🔥 obrigatório em muitos estados
+        icms.setVTotTrib("0.00");
 
-		det.setTPag("01");
-		det.setVPag(venda.getTotal().toString());
+        total.setICMSTot(icms);
 
-		pag.getDetPag().add(det);
+        return total;
+    }
 
-		return pag;
-	}
+    private TNFe.InfNFe.Transp montarTransporte() {
+        TNFe.InfNFe.Transp t = new TNFe.InfNFe.Transp();
+        t.setModFrete("9");
+        return t;
+    }
 
-	private String gerarCodigoNumerico() {
-		Random random = new Random();
-		int numero = 10000000 + random.nextInt(90000000);
-		return String.valueOf(numero);
-	}
+    private TNFe.InfNFe.Pag montarPagamento(Venda venda) {
 
-	private String gerarChaveNfe(String cUF, String data, String cnpj, String mod, String serie, String numero,
-			String tpEmis, String cNF) {
+        TNFe.InfNFe.Pag pag = new TNFe.InfNFe.Pag();
+        TNFe.InfNFe.Pag.DetPag det = new TNFe.InfNFe.Pag.DetPag();
 
-		String chave43 = String.format("%s%s%s%s%03d%09d%s%s", cUF, data, cnpj, mod, Integer.parseInt(serie),
-				Integer.parseInt(numero), tpEmis, cNF);
+        det.setTPag(mapearPagamento(venda.getMetodoPagamento()));
+        det.setVPag(formatarDecimal(venda.getTotal()));
 
-		int peso = 2;
-		int soma = 0;
+        pag.getDetPag().add(det);
 
-		for (int i = chave43.length() - 1; i >= 0; i--) {
-			soma += Character.getNumericValue(chave43.charAt(i)) * peso;
-			peso++;
-			if (peso > 9)
-				peso = 2;
-		}
+        return pag;
+    }
 
-		int resto = soma % 11;
-		int dv = (resto == 0 || resto == 1) ? 0 : 11 - resto;
+    private String mapearPagamento(MetodoPagamento metodo) {
+        if (metodo == null) return "01";
 
-		return chave43 + dv;
-	}
+        switch (metodo) {
+            case DINHEIRO: return "01";
+            case CARTAO_CREDITO: return "03";
+            case CARTAO_DEBITO: return "04";
+            case PIX: return "17";
+            default: return "99";
+        }
+    }
+
+    private String gerarCodigoNumerico() {
+        return String.valueOf(10000000 + new Random().nextInt(90000000));
+    }
+
+    private String gerarChaveNfe(String cUF, String data, String cnpj, String mod,
+                                String serie, String numero, String tpEmis, String cNF) {
+
+        String chave43 = String.format("%s%s%s%s%03d%09d%s%s",
+                cUF, data, cnpj, mod,
+                Integer.parseInt(serie),
+                Integer.parseInt(numero),
+                tpEmis, cNF);
+
+        int peso = 2, soma = 0;
+
+        for (int i = chave43.length() - 1; i >= 0; i--) {
+            soma += Character.getNumericValue(chave43.charAt(i)) * peso;
+            peso = (peso == 9) ? 2 : peso + 1;
+        }
+
+        int resto = soma % 11;
+        int dv = (resto <= 1) ? 0 : 11 - resto;
+
+        return chave43 + dv;
+    }
 }

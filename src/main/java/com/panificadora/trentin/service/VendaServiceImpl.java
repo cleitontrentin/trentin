@@ -65,6 +65,9 @@ public class VendaServiceImpl implements VendaService {
     public List<Venda> buscarTodos() {
         return dao.findAll();
     }
+    
+    @Autowired
+    private NfceService nfceService;
 
     // Cria nova venda em aberto
     @Transactional
@@ -157,6 +160,13 @@ public class VendaServiceImpl implements VendaService {
         venda.setCliente(cliente);
         venda.setMetodoPagamento(metodoPagamento);
         dao.update(venda);
+        
+        try {
+            nfceService.emitir(venda);
+        } catch (Exception e) {
+            e.printStackTrace(); // MOSTRA O ERRO REAL
+            throw new RuntimeException("Erro ao emitir NFC-e: " + e.getMessage(), e);
+        }
 
         // baixa o estoque
         for (VendaItem item : venda.getItens()) {
