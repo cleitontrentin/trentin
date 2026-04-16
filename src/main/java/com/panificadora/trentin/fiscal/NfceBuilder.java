@@ -178,7 +178,6 @@ public class NfceBuilder {
     }
 
     // (resto da sua classe continua exatamente igual)
-}
 
     private void montarProdutos(Venda venda, TNFe.InfNFe inf) {
 
