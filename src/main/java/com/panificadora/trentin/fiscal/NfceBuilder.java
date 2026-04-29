@@ -22,6 +22,9 @@ import br.com.swconsultoria.nfe.dom.ConfiguracoesNfe;
 import br.com.swconsultoria.nfe.schema_4.enviNFe.TEnderEmi;
 import br.com.swconsultoria.nfe.schema_4.enviNFe.TNFe;
 import br.com.swconsultoria.nfe.schema_4.enviNFe.TUfEmi;
+import br.com.swconsultoria.nfe.util.ChaveUtil;
+import br.com.swconsultoria.nfe.dom.enuns.EstadosEnum;
+import java.time.LocalDateTime;
 
 @Service
 public class NfceBuilder {
@@ -53,7 +56,14 @@ public class NfceBuilder {
 
         inf.setVersao("4.00");
 
-        TNFe.InfNFe.Ide ide = montarIde(config);
+        // ✅ DEFINE A DATA/HORA UMA VEZ
+        LocalDateTime dataEmissao = OffsetDateTime
+                .now(ZoneOffset.of("-03:00"))
+                .withSecond(0)
+                .withNano(0)
+                .toLocalDateTime();
+
+        TNFe.InfNFe.Ide ide = montarIde(config, dataEmissao);
         TNFe.InfNFe.Emit emit = montarEmitente();
 
         inf.setIde(ide);
@@ -64,15 +74,31 @@ public class NfceBuilder {
         inf.setTotal(montarTotal(venda));
         inf.setTransp(montarTransporte());
         inf.setPag(montarPagamento(venda));
+        
+        // ✅ USA A MESMA DATA
+        ChaveUtil chaveUtil = new ChaveUtil(
+            EstadosEnum.PR,
+            emit.getCNPJ(),
+            ide.getMod(),
+            Integer.parseInt(ide.getSerie()),
+            Integer.parseInt(ide.getNNF()),
+            ide.getTpEmis(),
+            ide.getCNF(),
+            dataEmissao  // ← MESMA DATA
+        );
+        
+        inf.setId(chaveUtil.getChaveNF());
+        ide.setCDV(chaveUtil.getDigitoVerificador());
 
         nfe.setInfNFe(inf);
 
         return nfe;
     }
 
+
     // ---------------- IDE ----------------
 
-    private TNFe.InfNFe.Ide montarIde(ConfiguracoesNfe config) {
+    private TNFe.InfNFe.Ide montarIde(ConfiguracoesNfe config, LocalDateTime dataEmissao) {
 
         TNFe.InfNFe.Ide ide = new TNFe.InfNFe.Ide();
 
@@ -81,32 +107,27 @@ public class NfceBuilder {
         ide.setMod("65");
         ide.setSerie("1");
 
-        // Numeração (controle seu OK)
         ide.setNNF(numeroService.gerarProximoNumero());
-
-        // Código aleatório da NFC-e (OK)
         ide.setCNF(gerarCodigoNumerico());
 
-        // Data/hora emissão (SEFAZ exige ISO com timezone)
+        // ✅ USA A DATA RECEBIDA
         String dhEmi = OffsetDateTime
-                .now(ZoneOffset.of("-03:00"))
-                .withSecond(0)
-                .withNano(0)
+                .of(dataEmissao, ZoneOffset.of("-03:00"))
                 .format(fmt);
 
         ide.setDhEmi(dhEmi);
 
-        ide.setTpNF("1");          // saída
-        ide.setIdDest("1");        // interno
+        ide.setTpNF("1");
+        ide.setIdDest("1");
         ide.setCMunFG("4108304");
 
-        ide.setTpImp("4");         // DANFE NFC-e
-        ide.setTpEmis("1");        // emissão normal
+        ide.setTpImp("4");
+        ide.setTpEmis("1");
 
         ide.setTpAmb(config.getAmbiente().getCodigo());
-        ide.setFinNFe("1");        // normal
-        ide.setIndFinal("1");      // consumidor final
-        ide.setIndPres("1");       // presencial
+        ide.setFinNFe("1");
+        ide.setIndFinal("1");
+        ide.setIndPres("1");
         ide.setIndIntermed("0");
 
         ide.setProcEmi("0");
@@ -214,18 +235,36 @@ public class NfceBuilder {
         icms.setVBC("0.00");
         icms.setVICMS("0.00");
         icms.setVICMSDeson("0.00");
+        
+        icms.setVBCST("0.00");
+        icms.setVST("0.00");
+      
+        icms.setVFCPST("0.00");
+        icms.setVFCPSTRet("0.00");
+        icms.setVFCPUFDest("0.00");
+        icms.setVICMSUFDest("0.00");
+        icms.setVICMSUFRemet("0.00");
+        icms.setVFCP("0.00");
 
         icms.setVProd(formatarDecimal(venda.getTotal()));
 
         icms.setVNF(formatarDecimal(venda.getTotal()));
 
         icms.setVTotTrib("0.00");
+        icms.setVFrete("0.00");
+        icms.setVSeg("0.00");
+        icms.setVDesc("0.00");
+        icms.setVII("0.00");
+        icms.setVIPI("0.00");
+        icms.setVIPIDevol("0.00");
+        icms.setVPIS("0.00");
+        icms.setVCOFINS("0.00");
+        icms.setVOutro("0.00");
 
         total.setICMSTot(icms);
 
         return total;
     }
-
     // ---------------- TRANSPORTE ----------------
 
     private TNFe.InfNFe.Transp montarTransporte() {
