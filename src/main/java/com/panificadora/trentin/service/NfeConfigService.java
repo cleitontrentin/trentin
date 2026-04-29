@@ -3,6 +3,8 @@ package com.panificadora.trentin.service;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import com.ctc.wstx.msv.W3CSchema;
+
 import br.com.swconsultoria.certificado.Certificado;
 import br.com.swconsultoria.certificado.CertificadoService;
 import br.com.swconsultoria.nfe.dom.ConfiguracoesNfe;
@@ -23,7 +25,7 @@ public class NfeConfigService {
 
     @Value("${nfe.certificado.senha}")
     private String senhaCertificado;
-
+    
     public ConfiguracoesNfe getConfiguracoesNfe() throws Exception {
 
         Certificado certificado = CertificadoService.certificadoPfx(
@@ -35,7 +37,7 @@ public class NfeConfigService {
                 EstadosEnum.valueOf(estado),
                 AmbienteEnum.valueOf(ambiente),
                 certificado,
-                "America/Sao_Paulo"
+                "C:/nfe/schemas/"
         );
     }
 }

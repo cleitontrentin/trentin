@@ -2,9 +2,9 @@ package com.panificadora.trentin.fiscal;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.security.MessageDigest;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.Random;
 
 import javax.xml.bind.JAXBElement;
@@ -29,16 +29,22 @@ public class NfceBuilder {
     @Autowired
     private NfceNumeroService numeroService;
 
-    private static final String CSC = "SEU_CSC_AQUI";
-    private static final String ID_CSC = "000001";
+    private final DateTimeFormatter fmt =
+            DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ssXXX");
+
+    // ---------------- UTIL ----------------
 
     private String formatarDecimal(BigDecimal valor) {
         return valor.setScale(2, RoundingMode.HALF_UP).toPlainString();
     }
 
     private String formatarQuantidade(BigDecimal valor) {
-        return valor.setScale(4, RoundingMode.HALF_UP).stripTrailingZeros().toPlainString();
+        return valor.setScale(4, RoundingMode.HALF_UP)
+                .stripTrailingZeros()
+                .toPlainString();
     }
+
+    // ---------------- PRINCIPAL ----------------
 
     public TNFe montarNfce(Venda venda, ConfiguracoesNfe config) {
 
@@ -59,69 +65,15 @@ public class NfceBuilder {
         inf.setTransp(montarTransporte());
         inf.setPag(montarPagamento(venda));
 
-        // 🔑 CHAVE
-        String data = ide.getDhEmi().substring(2, 4) + ide.getDhEmi().substring(5, 7);
-
-        String chave = gerarChaveNfe(
-                ide.getCUF(),
-                data,
-                emit.getCNPJ(),
-                ide.getMod(),
-                ide.getSerie(),
-                ide.getNNF(),
-                ide.getTpEmis(),
-                ide.getCNF()
-        );
-
-        ide.setCDV(chave.substring(chave.length() - 1));
-        inf.setId("NFe" + chave);
-
         nfe.setInfNFe(inf);
-
-        // 🔥 SUPLEMENTO (QR CODE)
-        TNFe.InfNFeSupl supl = new TNFe.InfNFeSupl();
-
-        String qrCode = gerarQrCode(chave, config.getAmbiente().getCodigo());
-        supl.setQrCode(qrCode);
-
-        supl.setUrlChave("http://www.fazenda.pr.gov.br/nfce/qrcode");
-
-        nfe.setInfNFeSupl(supl);
 
         return nfe;
     }
 
-    private String gerarQrCode(String chave, String tpAmb) {
-        try {
-
-            String url = "http://www.fazenda.pr.gov.br/nfce/qrcode";
-
-            String dados = "chNFe=" + chave +
-                    "&nVersao=100" +
-                    "&tpAmb=" + tpAmb +
-                    "&cIdToken=" + ID_CSC;
-
-            String hash = sha1(dados + CSC);
-
-            return url + "?" + dados + "&cHashQRCode=" + hash;
-
-        } catch (Exception e) {
-            throw new RuntimeException("Erro ao gerar QRCode", e);
-        }
-    }
-
-    private String sha1(String value) throws Exception {
-        MessageDigest md = MessageDigest.getInstance("SHA-1");
-        byte[] bytes = md.digest(value.getBytes("UTF-8"));
-
-        StringBuilder sb = new StringBuilder();
-        for (byte b : bytes) {
-            sb.append(String.format("%02X", b));
-        }
-        return sb.toString();
-    }
+    // ---------------- IDE ----------------
 
     private TNFe.InfNFe.Ide montarIde(ConfiguracoesNfe config) {
+
         TNFe.InfNFe.Ide ide = new TNFe.InfNFe.Ide();
 
         ide.setCUF("41");
@@ -129,29 +81,43 @@ public class NfceBuilder {
         ide.setMod("65");
         ide.setSerie("1");
 
+        // Numeração (controle seu OK)
         ide.setNNF(numeroService.gerarProximoNumero());
+
+        // Código aleatório da NFC-e (OK)
         ide.setCNF(gerarCodigoNumerico());
 
-        ide.setDhEmi(OffsetDateTime.now(ZoneOffset.of("-03:00")).withNano(0).toString());
+        // Data/hora emissão (SEFAZ exige ISO com timezone)
+        String dhEmi = OffsetDateTime
+                .now(ZoneOffset.of("-03:00"))
+                .withSecond(0)
+                .withNano(0)
+                .format(fmt);
 
-        ide.setTpNF("1");
-        ide.setIdDest("1");
+        ide.setDhEmi(dhEmi);
+
+        ide.setTpNF("1");          // saída
+        ide.setIdDest("1");        // interno
         ide.setCMunFG("4108304");
 
-        ide.setTpImp("4");
-        ide.setTpEmis("1");
+        ide.setTpImp("4");         // DANFE NFC-e
+        ide.setTpEmis("1");        // emissão normal
 
         ide.setTpAmb(config.getAmbiente().getCodigo());
-        ide.setFinNFe("1");
-        ide.setIndFinal("1");
-        ide.setIndPres("1");
+        ide.setFinNFe("1");        // normal
+        ide.setIndFinal("1");      // consumidor final
+        ide.setIndPres("1");       // presencial
+        ide.setIndIntermed("0");
+
         ide.setProcEmi("0");
         ide.setVerProc("1.0");
 
         return ide;
     }
+    // ---------------- EMITENTE ----------------
 
     private TNFe.InfNFe.Emit montarEmitente() {
+
         TNFe.InfNFe.Emit emit = new TNFe.InfNFe.Emit();
 
         emit.setCNPJ("10755198000177");
@@ -177,46 +143,50 @@ public class NfceBuilder {
         return emit;
     }
 
-    // (resto da sua classe continua exatamente igual)
+    // ---------------- PRODUTOS ----------------
 
     private void montarProdutos(Venda venda, TNFe.InfNFe inf) {
 
         int item = 1;
 
-        for (VendaItem vendaItem : venda.getItens()) {
+        for (VendaItem v : venda.getItens()) {
 
             TNFe.InfNFe.Det det = new TNFe.InfNFe.Det();
             det.setNItem(String.valueOf(item++));
 
             TNFe.InfNFe.Det.Prod prod = new TNFe.InfNFe.Det.Prod();
 
-            prod.setCProd(vendaItem.getProduto().getCode() != null ?
-                    vendaItem.getProduto().getCode() : "1");
+            prod.setCProd(v.getProduto().getCode() != null
+                    ? v.getProduto().getCode()
+                    : "1");
 
             prod.setCEAN("SEM GTIN");
-            prod.setXProd(vendaItem.getProduto().getName());
+            prod.setXProd(v.getProduto().getName());
             prod.setNCM("19059090");
             prod.setCFOP("5102");
 
             prod.setUCom("UN");
-            prod.setQCom(formatarQuantidade(vendaItem.getQuantidade()));
-            prod.setVUnCom(formatarDecimal(vendaItem.getPrecoUnitario()));
-            prod.setVProd(formatarDecimal(vendaItem.getSubtotal()));
+            prod.setQCom(formatarQuantidade(v.getQuantidade()));
+            prod.setVUnCom(formatarDecimal(v.getPrecoUnitario()));
+            prod.setVProd(formatarDecimal(v.getSubtotal()));
 
             prod.setCEANTrib("SEM GTIN");
             prod.setUTrib("UN");
-            prod.setQTrib(formatarQuantidade(vendaItem.getQuantidade()));
-            prod.setVUnTrib(formatarDecimal(vendaItem.getPrecoUnitario()));
+            prod.setQTrib(formatarQuantidade(v.getQuantidade()));
+            prod.setVUnTrib(formatarDecimal(v.getPrecoUnitario()));
 
             prod.setIndTot("1");
 
             det.setProd(prod);
 
-            TNFe.InfNFe.Det.Imposto imposto = new TNFe.InfNFe.Det.Imposto();
+            TNFe.InfNFe.Det.Imposto imposto =
+                    new TNFe.InfNFe.Det.Imposto();
 
-            // ICMS
-            TNFe.InfNFe.Det.Imposto.ICMS icms = new TNFe.InfNFe.Det.Imposto.ICMS();
-            TNFe.InfNFe.Det.Imposto.ICMS.ICMSSN102 icms102 = new TNFe.InfNFe.Det.Imposto.ICMS.ICMSSN102();
+            TNFe.InfNFe.Det.Imposto.ICMS icms =
+                    new TNFe.InfNFe.Det.Imposto.ICMS();
+
+            TNFe.InfNFe.Det.Imposto.ICMS.ICMSSN102 icms102 =
+                    new TNFe.InfNFe.Det.Imposto.ICMS.ICMSSN102();
 
             icms102.setOrig("0");
             icms102.setCSOSN("102");
@@ -225,71 +195,30 @@ public class NfceBuilder {
 
             imposto.getContent().add(new JAXBElement<>(
                     new QName("http://www.portalfiscal.inf.br/nfe", "ICMS"),
-                    TNFe.InfNFe.Det.Imposto.ICMS.class, icms));
-
-            // PIS
-            TNFe.InfNFe.Det.Imposto.PIS pis = new TNFe.InfNFe.Det.Imposto.PIS();
-            TNFe.InfNFe.Det.Imposto.PIS.PISNT pisnt = new TNFe.InfNFe.Det.Imposto.PIS.PISNT();
-
-            pisnt.setCST("07");
-            pis.setPISNT(pisnt);
-
-            imposto.getContent().add(new JAXBElement<>(
-                    new QName("http://www.portalfiscal.inf.br/nfe", "PIS"),
-                    TNFe.InfNFe.Det.Imposto.PIS.class, pis));
-
-            // COFINS
-            TNFe.InfNFe.Det.Imposto.COFINS cofins = new TNFe.InfNFe.Det.Imposto.COFINS();
-            TNFe.InfNFe.Det.Imposto.COFINS.COFINSNT cofinsnt = new TNFe.InfNFe.Det.Imposto.COFINS.COFINSNT();
-
-            cofinsnt.setCST("07");
-            cofins.setCOFINSNT(cofinsnt);
-
-            imposto.getContent().add(new JAXBElement<>(
-                    new QName("http://www.portalfiscal.inf.br/nfe", "COFINS"),
-                    TNFe.InfNFe.Det.Imposto.COFINS.class, cofins));
+                    TNFe.InfNFe.Det.Imposto.ICMS.class,
+                    icms));
 
             det.setImposto(imposto);
             inf.getDet().add(det);
         }
     }
 
+    // ---------------- TOTAL ----------------
+
     private TNFe.InfNFe.Total montarTotal(Venda venda) {
 
         TNFe.InfNFe.Total total = new TNFe.InfNFe.Total();
-        TNFe.InfNFe.Total.ICMSTot icms = new TNFe.InfNFe.Total.ICMSTot();
+        TNFe.InfNFe.Total.ICMSTot icms =
+                new TNFe.InfNFe.Total.ICMSTot();
 
         icms.setVBC("0.00");
         icms.setVICMS("0.00");
-
-        // 🔥 ESSENCIAL pro PR (mesmo zerado)
         icms.setVICMSDeson("0.00");
 
-        // pode colocar esses zerados pra evitar rejeição futura
-        icms.setVFCP("0.00");
-        icms.setVBCST("0.00");
-        icms.setVST("0.00");
-        icms.setVFCPST("0.00");
-        icms.setVFCPSTRet("0.00");
-
-        // agora sim valores principais
         icms.setVProd(formatarDecimal(venda.getTotal()));
-
-        icms.setVFrete("0.00");
-        icms.setVSeg("0.00");
-        icms.setVDesc("0.00");
-        icms.setVII("0.00");
-        icms.setVIPI("0.00");
-        icms.setVIPIDevol("0.00");
-
-        icms.setVPIS("0.00");
-        icms.setVCOFINS("0.00");
-
-        icms.setVOutro("0.00");
 
         icms.setVNF(formatarDecimal(venda.getTotal()));
 
-        // 🔥 obrigatório em muitos estados
         icms.setVTotTrib("0.00");
 
         total.setICMSTot(icms);
@@ -297,16 +226,21 @@ public class NfceBuilder {
         return total;
     }
 
+    // ---------------- TRANSPORTE ----------------
+
     private TNFe.InfNFe.Transp montarTransporte() {
         TNFe.InfNFe.Transp t = new TNFe.InfNFe.Transp();
         t.setModFrete("9");
         return t;
     }
 
+    // ---------------- PAGAMENTO ----------------
+
     private TNFe.InfNFe.Pag montarPagamento(Venda venda) {
 
         TNFe.InfNFe.Pag pag = new TNFe.InfNFe.Pag();
-        TNFe.InfNFe.Pag.DetPag det = new TNFe.InfNFe.Pag.DetPag();
+        TNFe.InfNFe.Pag.DetPag det =
+                new TNFe.InfNFe.Pag.DetPag();
 
         det.setTPag(mapearPagamento(venda.getMetodoPagamento()));
         det.setVPag(formatarDecimal(venda.getTotal()));
@@ -317,6 +251,7 @@ public class NfceBuilder {
     }
 
     private String mapearPagamento(MetodoPagamento metodo) {
+
         if (metodo == null) return "01";
 
         switch (metodo) {
@@ -328,29 +263,10 @@ public class NfceBuilder {
         }
     }
 
+    // ---------------- UTIL ----------------
+
     private String gerarCodigoNumerico() {
-        return String.valueOf(10000000 + new Random().nextInt(90000000));
-    }
-
-    private String gerarChaveNfe(String cUF, String data, String cnpj, String mod,
-                                String serie, String numero, String tpEmis, String cNF) {
-
-        String chave43 = String.format("%s%s%s%s%03d%09d%s%s",
-                cUF, data, cnpj, mod,
-                Integer.parseInt(serie),
-                Integer.parseInt(numero),
-                tpEmis, cNF);
-
-        int peso = 2, soma = 0;
-
-        for (int i = chave43.length() - 1; i >= 0; i--) {
-            soma += Character.getNumericValue(chave43.charAt(i)) * peso;
-            peso = (peso == 9) ? 2 : peso + 1;
-        }
-
-        int resto = soma % 11;
-        int dv = (resto <= 1) ? 0 : 11 - resto;
-
-        return chave43 + dv;
+        return String.valueOf(10000000 +
+                new Random().nextInt(90000000));
     }
 }

@@ -1,5 +1,7 @@
 package com.panificadora.trentin.service;
 
+import java.time.LocalDateTime;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -13,6 +15,7 @@ import br.com.swconsultoria.nfe.dom.enuns.DocumentoEnum;
 import br.com.swconsultoria.nfe.schema_4.enviNFe.TEnviNFe;
 import br.com.swconsultoria.nfe.schema_4.enviNFe.TNFe;
 import br.com.swconsultoria.nfe.schema_4.enviNFe.TRetEnviNFe;
+import br.com.swconsultoria.nfe.util.XmlNfeUtil;
 
 @Service
 public class NfceService {
@@ -25,35 +28,30 @@ public class NfceService {
 
     @Autowired
     private VendaDao vendaDao;
-
+    
     public void emitir(Venda venda) throws Exception {
 
         ConfiguracoesNfe config = configService.getConfiguracoesNfe();
 
-        // 1. Monta
         TNFe nfe = builder.montarNfce(venda, config);
 
-        // 2. Monta lote
         TEnviNFe lote = new TEnviNFe();
         lote.setVersao("4.00");
         lote.setIdLote(String.valueOf(System.currentTimeMillis()));
         lote.setIndSinc("1");
 
         lote.getNFe().add(nfe);
-        String xmlGerado = br.com.swconsultoria.nfe.util.XmlNfeUtil.objectToXml(lote);
-        System.out.println("XML GERADO:\n" + xmlGerado);
 
-        // 3. Envia (já assina automaticamente)
-        TRetEnviNFe retorno = Nfe.enviarNfe(
-                config,
-                lote,
-                DocumentoEnum.NFCE
-        );
+        Nfe.montaNfe(config, lote, true);
+
+        TRetEnviNFe retorno = Nfe.enviarNfe(config, lote, DocumentoEnum.NFCE);
+
+        System.out.println("XML GERADO:\n" + XmlNfeUtil.objectToXml(lote));
+
 
         System.out.println("STATUS: " + retorno.getCStat());
         System.out.println("MOTIVO: " + retorno.getXMotivo());
 
-        // 4. Validação
         if (!"104".equals(retorno.getCStat())) {
             throw new RuntimeException("Erro no envio: " + retorno.getXMotivo());
         }
@@ -64,16 +62,14 @@ public class NfceService {
             throw new RuntimeException("Nota rejeitada: " + prot.getXMotivo());
         }
 
-        // 5. XML (por enquanto simples)
-        String xmlAutorizado = br.com.swconsultoria.nfe.util.XmlNfeUtil.objectToXml(nfe);
+        String xmlAutorizado = XmlNfeUtil.objectToXml(nfe);
 
-        // 6. Salva
         venda.setChaveNfce(prot.getChNFe());
         venda.setNumeroNfce(nfe.getInfNFe().getIde().getNNF());
         venda.setStatusNfce("AUTORIZADA");
         venda.setProtocoloNfce(prot.getNProt());
         venda.setXmlNfce(xmlAutorizado);
-        venda.setDataEmissaoNfce(java.time.LocalDateTime.now());
+        venda.setDataEmissaoNfce(LocalDateTime.now());
 
         vendaDao.update(venda);
     }
